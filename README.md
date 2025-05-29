@@ -65,8 +65,8 @@
 
 1. 克隆本仓库：
    ```bash
-   git clone https://github.com/yourusername/knowledge-graph-system.git
-   cd knowledge-graph-system
+   git clone https://github.com/wangpengyu321/project2.git
+   cd project2
    ```
 
 2. 配置Neo4j：
