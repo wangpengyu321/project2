@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">知识图谱系统 - 数据可视化</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 70px;
+            --topbar-height: 60px;
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --danger-color: #f43f5e;
+            --dark-color: #0f172a;
+            --dark-blue: #1e2a78;
+            --light-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--primary-light));
+            --gradient-accent: linear-gradient(135deg, var(--accent-color), #b5179e);
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--dark-blue));
+            --gradient-success: linear-gradient(135deg, var(--success-color), #34d399);
+            --card-border-radius: 10px;
+            --transition-speed: 0.3s;
+            --border-radius: 12px;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fb;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            color: var(--gray-700);
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+        
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .menu-item.active {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all var(--transition-speed) ease;
+            padding-top: var(--topbar-height);
+        }
+        
+        .main-content.expanded {
+            margin-left: var(--sidebar-width-collapsed);
+        }
+        
+        /* 顶部导航栏 */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            height: var(--topbar-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 999;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .top-navbar.expanded {
+            left: var(--sidebar-width-collapsed);
+        }
+        
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar-title h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            color: var(--gray-600);
+            position: relative;
+        }
+        
+        .nav-icon-btn:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .nav-icon-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(247, 37, 133, 0.3);
+            font-weight: 600;
+        }
+        
+        .user-dropdown {
+            position: relative;
+        }
+        
+        .user-dropdown .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .user-dropdown .dropdown-toggle:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* 可视化区域样式 */
+        .visualization-container {
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .dashboard-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-primary {
+            border-top: 4px solid #4e73df;
+        }
+        
+        .stat-success {
+            border-top: 4px solid #1cc88a;
+        }
+        
+        .stat-warning {
+            border-top: 4px solid #f6c23e;
+        }
+        
+        .stat-danger {
+            border-top: 4px solid #e74a3b;
+        }
+        
+        .stat-icon {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: inline-block;
+            padding: 10px;
+            border-radius: 50%;
+            background-color: #f8f9fc;
+        }
+        
+        .stat-primary .stat-icon {
+            color: #4e73df;
+        }
+        
+        .stat-success .stat-icon {
+            color: #1cc88a;
+        }
+        
+        .stat-warning .stat-icon {
+            color: #f6c23e;
+        }
+        
+        .stat-danger .stat-icon {
+            color: #e74a3b;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        .chart-header {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .chart-title {
+            margin: 0;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-diagram-3-fill"></i> 大数据知识图谱</h3>
+            <i class="bi bi-x-lg d-lg-none" id="close-sidebar" style="cursor: pointer;"></i>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">主要功能</div>
+                <a href="/aigraph/dashboard" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>仪表盘
+                </a>
+                <a href="/aigraph/graph-view" class="menu-item">
+                    <i class="bi bi-graph-up"></i>知识图谱
+                </a>
+                <a href="/aigraph/search" class="menu-item">
+                    <i class="bi bi-search"></i>知识检索
+                </a>
+                <a href="/aigraph/analysis" class="menu-item">
+                    <i class="bi bi-diagram-3"></i>关系分析
+                </a>
+                <a href="/aigraph/visualization" class="menu-item active">
+                    <i class="bi bi-bar-chart-line"></i>数据可视化
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">学习资源</div>
+                <a href="/aigraph/courses" class="menu-item">
+                    <i class="bi bi-journal-text"></i>课程内容
+                </a>
+                <a href="/aigraph/qa" class="menu-item">
+                    <i class="bi bi-chat-dots"></i>AI智能问答
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/aigraph/settings" class="menu-item">
+                    <i class="bi bi-gear"></i>系统设置
+                </a>
+                <a href="/aigraph/profile" class="menu-item">
+                    <i class="bi bi-person"></i>个人中心
+                </a>
+                <a href="/aigraph/logout" class="menu-item">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-navbar">
+            <div class="navbar-title">
+                <h4>数据可视化</h4>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="nav-icon-btn" title="消息通知">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-danger">3</span>
+                </div>
+                
+                <!-- 移除了学习助手按钮 -->
+                
+                <div class="user-dropdown dropdown">
+                    <button class="dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                        <span th:text="${username}">用户名</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-header">
+                                <strong th:text="${username}">用户名</strong>
+                                <p class="mb-0">管理员</p>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="/aigraph/profile" id="profileLink"><i class="bi bi-person"></i> 个人资料</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/settings" id="settingsLink"><i class="bi bi-gear"></i> 账号设置</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/help" id="helpLink"><i class="bi bi-question-circle"></i> 帮助中心</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/aigraph/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 可视化内容区域 -->
+        <div class="visualization-container">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">大数据技术课程数据可视化</h2>
+                <p class="dashboard-subtitle">探索知识图谱中的数据分布与关联关系</p>
+            </div>
+            
+            <!-- 统计卡片 -->
+            <div class="stats-cards">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <i class="bi bi-node-plus"></i>
+                    </div>
+                    <h3 th:text="${nodeCount}" class="fs-2 mb-2">245</h3>
+                    <p class="text-muted mb-0">知识节点</p>
+                    <div class="progress mt-3" style="height: 5px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">覆盖率 85%</small>
+                </div>
+                
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">
+                        <i class="bi bi-link-45deg"></i>
+                    </div>
+                    <h3 th:text="${relationshipCount}" class="fs-2 mb-2">412</h3>
+                    <p class="text-muted mb-0">关系连接</p>
+                    <div class="progress mt-3" style="height: 5px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 92%;" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">完整性 92%</small>
+                </div>
+                
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h3 th:text="${courseCount}" class="fs-2 mb-2">18</h3>
+                    <p class="text-muted mb-0">课程章节</p>
+                    <div class="progress mt-3" style="height: 5px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">进度 100%</small>
+                </div>
+                
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon">
+                        <i class="bi bi-layers"></i>
+                    </div>
+                    <h3 th:text="${unitCount}" class="fs-2 mb-2">64</h3>
+                    <p class="text-muted mb-0">知识单元</p>
+                    <div class="progress mt-3" style="height: 5px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 78%;" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">完成率 78%</small>
+                </div>
+            </div>
+            
+            <!-- 图表区域 -->
+            <div class="row">
+                <!-- 学科分布图表 -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title">知识点分类分布</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="categoryDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 知识点复杂度分布图表 -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title">知识点复杂度分布</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="complexityDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 学习进度图表 -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title">学习进度跟踪</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="learningProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 知识依赖关系图表 -->
+                <div class="col-lg-6">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title">知识点连接度分析</h5>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="connectionAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3D知识图谱可视化 -->
+                <div class="col-12">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h5 class="chart-title">知识图谱连接网络</h5>
+                        </div>
+                        <div id="networkGraph" style="height: 500px; background-color: #f8f9fa; border-radius: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // 侧边栏切换
+            $('#toggle-sidebar').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#main-content').toggleClass('expanded');
+                $('.top-navbar').toggleClass('expanded');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 知识点分类分布图
+            const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['分布式存储系统', '分布式计算框架', '数据采集与预处理', '数据仓库与数据湖', '数据挖掘与分析', '大数据应用实践'],
+                    datasets: [{
+                        label: '知识点数量',
+                        data: [42, 37, 58, 45, 32, 31],
+                        backgroundColor: [
+                            '#4e73df',
+                            '#1cc88a',
+                            '#36b9cc',
+                            '#f6c23e',
+                            '#e74a3b',
+                            '#6f42c1'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // 知识点复杂度分布图
+            const complexityCtx = document.getElementById('complexityDistributionChart').getContext('2d');
+            new Chart(complexityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['分布式存储系统', '分布式计算框架', '数据采集与预处理', '数据仓库与数据湖', '数据挖掘与分析', '大数据应用实践'],
+                    datasets: [{
+                        label: '知识点数量',
+                        data: [38, 67, 83, 42, 15],
+                        backgroundColor: '#4e73df',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 学习进度图
+            const progressCtx = document.getElementById('learningProgressChart').getContext('2d');
+            new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '完成知识点',
+                        data: [23, 45, 78, 125, 167, 192],
+                        fill: true,
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        borderColor: '#1cc88a',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // 知识点连接度分析
+            const connectionCtx = document.getElementById('connectionAnalysisChart').getContext('2d');
+            new Chart(connectionCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['分布式存储系统', '分布式计算框架', '数据采集与预处理', '数据仓库与数据湖', '数据挖掘与分析', '大数据应用实践'],
+                    datasets: [{
+                        label: '内部连接',
+                        data: [65, 59, 90, 81, 56, 55],
+                        fill: true,
+                        backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(78, 115, 223, 1)'
+                    }, {
+                        label: '外部连接',
+                        data: [28, 48, 40, 39, 36, 27],
+                        fill: true,
+                        backgroundColor: 'rgba(231, 74, 59, 0.2)',
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        pointBackgroundColor: 'rgba(231, 74, 59, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(231, 74, 59, 1)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    }
+                }
+            });
+            
+            // 知识图谱可视化
+            const networkGraph = echarts.init(document.getElementById('networkGraph'));
+            
+            // 模拟节点数据
+            const nodes = [];
+            const categories = ['分布式存储系统', '分布式计算框架', '数据采集与预处理', '数据仓库与数据湖', '数据挖掘与分析', '大数据应用实践'];
+            const categoryColors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#6f42c1'];
+            
+            // 创建60个节点
+            for (let i = 0; i < 60; i++) {
+                const category = Math.floor(Math.random() * 6);
+                nodes.push({
+                    id: i,
+                    name: `知识点${i+1}`,
+                    symbolSize: Math.random() * 20 + 10,
+                    value: Math.random() * 100,
+                    category: category,
+                    x: Math.random() * 500,
+                    y: Math.random() * 500
+                });
+            }
+            
+            // 创建边的关系
+            const links = [];
+            for (let i = 0; i < 120; i++) {
+                const source = Math.floor(Math.random() * 60);
+                const target = Math.floor(Math.random() * 60);
+                if (source !== target) {
+                    links.push({
+                        source: source,
+                        target: target
+                    });
+                }
+            }
+            
+            const option = {
+                tooltip: {
+                    formatter: function(params) {
+                        if (params.dataType === 'node') {
+                            return `<strong>${params.data.name}</strong><br/>
+                                    类别：${categories[params.data.category]}<br/>
+                                    复杂度：${Math.floor(params.data.value)}%`;
+                        }
+                        return '';
+                    }
+                },
+                legend: {
+                    data: categories,
+                    textStyle: {
+                        color: '#333'
+                    },
+                    selectedMode: 'multiple'
+                },
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    data: nodes,
+                    links: links,
+                    categories: categories.map((name, index) => ({
+                        name: name,
+                        itemStyle: {
+                            color: categoryColors[index]
+                        }
+                    })),
+                    roam: true,
+                    label: {
+                        show: false,
+                        position: 'right'
+                    },
+                    lineStyle: {
+                        color: 'source',
+                        curveness: 0.3
+                    },
+                    emphasis: {
+                        focus: 'adjacency',
+                        lineStyle: {
+                            width: 5
+                        }
+                    },
+                    force: {
+                        repulsion: 100,
+                        gravity: 0.1,
+                        edgeLength: 80
+                    }
+                }]
+            };
+            
+            networkGraph.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                networkGraph.resize();
+            });
+        });
+    </script>
+</body>
+</html> 

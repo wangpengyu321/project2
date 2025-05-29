@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">知识图谱系统 - 知识图谱</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 70px;
+            --topbar-height: 60px;
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --danger-color: #f43f5e;
+            --dark-color: #0f172a;
+            --dark-blue: #1e2a78;
+            --light-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--primary-light));
+            --gradient-accent: linear-gradient(135deg, var(--accent-color), #b5179e);
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--dark-blue));
+            --gradient-success: linear-gradient(135deg, var(--success-color), #34d399);
+            --card-border-radius: 10px;
+            --transition-speed: 0.3s;
+            --border-radius: 12px;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fb;
+            background-image: 
+                radial-gradient(circle at 95% 5%, rgba(67, 97, 238, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 5% 92%, rgba(76, 201, 240, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 90% 92%, rgba(247, 37, 133, 0.03) 0%, transparent 15%);
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 装饰元素 */
+        .deco-shape {
+            position: fixed;
+            z-index: -1;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: 0.25;
+        }
+        
+        .deco-shape-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-light);
+            top: -200px;
+            right: -200px;
+        }
+        
+        .deco-shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary-color);
+            bottom: -150px;
+            left: -150px;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            color: var(--gray-700);
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+        
+        .sidebar-header h3 i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+        
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .sidebar.collapsed .menu-section-title {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .menu-item.active {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding: 15px 0;
+        }
+        
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: var(--sidebar-width-collapsed);
+        }
+        
+        /* 顶部导航 */
+        .top-navbar {
+            height: var(--topbar-height);
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar-title h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            color: var(--gray-600);
+            position: relative;
+        }
+        
+        .nav-icon-btn:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .nav-icon-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.65rem;
+            padding: 0.25em 0.5em;
+        }
+        
+        .user-dropdown {
+            margin-left: 15px;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: var(--transition-main);
+        }
+        
+        .dropdown-toggle:hover {
+            color: var(--primary-color);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.25);
+        }
+        
+        /* 内容区域 */
+        .content {
+            padding: 20px;
+            padding-top: calc(var(--topbar-height) + 20px);
+            display: flex;
+            min-height: calc(100vh - var(--topbar-height));
+        }
+        
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-subtitle {
+            color: var(--gray-600);
+            margin-bottom: 20px;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            border-radius: var(--border-radius);
+            border: none;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-main);
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-header h5 {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 图谱容器样式 */
+        #graph-container {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            border-radius: var(--card-border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 100;
+        }
+        
+        /* 图谱控制按钮 */
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .control-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* 图表操作按钮样式 */
+        .graph-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        /* 节点信息面板 */
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            width: 380px;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .node-details h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .node-details p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        .node-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .type-badge {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .difficulty-badge {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .chapter-badge {
+            background-color: rgba(73, 163, 241, 0.1);
+            color: #49a3f1;
+        }
+        
+        .keyword-badge {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--accent-color);
+        }
+        
+        /* 图例面板 */
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 15px;
+            width: 230px;
+            display: none;
+        }
+        
+        .legend-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .legend-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .legend-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* 响应式样式 */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-navbar {
+            left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 15px;
+            }
+            
+            .info-panel {
+                width: 90%;
+                max-width: 350px;
+            }
+        }
+        
+        /* 消息通知下拉菜单 */
+        .notification-dropdown {
+            width: 300px;
+            padding: 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        
+        .notification-content {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        .nav-icon-btn-inner {
+            background: none;
+            border: none;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+        }
+        
+        /* 网络图样式 - 确保所有节点文本可见 */
+        .network-container {
+            width: 100%;
+            height: calc(100vh - var(--topbar-height) - 160px);
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: var(--card-border-radius);
+            overflow: hidden;
+        }
+        
+        /* 确保vis.js节点标签文本居中显示 */
+        .vis-network .vis-label {
+            position: absolute;
+            background: none;
+            display: block;
+            text-align: center;
+            white-space: nowrap;
+            box-sizing: content-box;
+        }
+        
+        /* 详情面板样式 */
+        .detail-panel {
+            width: 350px;
+            height: calc(100vh - var(--topbar-height) - 40px);
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-left: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-panel.collapsed {
+            width: 50px;
+            overflow: hidden;
+        }
+        
+        .detail-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .detail-panel-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .detail-panel.collapsed .detail-panel-header h5 {
+            display: none;
+        }
+        
+        .detail-panel-body {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .detail-panel.collapsed .detail-panel-body {
+            display: none;
+        }
+        
+        .detail-header {
+            margin-bottom: 20px;
+        }
+        
+        .detail-header h4 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .difficulty-stars {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .unit-info {
+            margin-top: 5px;
+        }
+        
+        .unit-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .related-nodes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .related-node-item {
+            margin-bottom: 5px;
+        }
+        
+        .node-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        
+        .relation-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .learning-materials {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .material-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 5px;
+            background-color: var(--gray-100);
+            transition: background-color 0.2s;
+        }
+        
+        .material-item:hover {
+            background-color: var(--gray-200);
+        }
+        
+        .material-item i {
+            color: var(--primary-color);
+        }
+        
+        .material-link {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .no-related-nodes, .no-materials {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            padding: 5px 0;
+        }
+        
+        /* 按钮激活状态 */
+        .btn-outline-primary.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* 图谱容器样式调整 */
+        .graph-container {
+            position: relative;
+            width: calc(100% - 350px);
+            height: calc(100vh - var(--topbar-height) - 40px);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .graph-container.expanded {
+            width: 100%;
+        }
+        
+        #graphCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+        }
+        
+        /* 加载动画 */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 100;
+            border-radius: var(--border-radius);
+        }
+        
+        /* 工具栏样式 */
+        .graph-toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-box {
+            width: 300px;
+            position: relative;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-result-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .search-result-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .search-result-unit {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        
+        .search-result-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .concept-badge {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .tech-badge {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .case-badge {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .toolbar-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰形状 -->
+    <div class="deco-shape deco-shape-1"></div>
+    <div class="deco-shape deco-shape-2"></div>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-diagram-3-fill"></i> 大数据知识图谱</h3>
+            <i class="bi bi-x-lg d-lg-none" id="close-sidebar" style="cursor: pointer;"></i>
+            </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">主要功能</div>
+                <a href="/aigraph/dashboard" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>仪表盘
+                </a>
+                <a href="/aigraph/graph-view" class="menu-item active">
+                    <i class="bi bi-graph-up"></i>知识图谱
+                </a>
+                <a href="/aigraph/search" class="menu-item">
+                    <i class="bi bi-search"></i>知识检索
+                </a>
+                <a href="/aigraph/analysis" class="menu-item">
+                    <i class="bi bi-diagram-3"></i>关系分析
+                </a>
+                <a href="/aigraph/visualization" class="menu-item">
+                    <i class="bi bi-bar-chart-line"></i>数据可视化
+                </a>
+        </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">学习资源</div>
+                <a href="/aigraph/courses" class="menu-item">
+                    <i class="bi bi-journal-text"></i>课程内容
+                </a>
+                <!-- 移除教学案例和学习资料链接 -->
+                <a href="/aigraph/qa" class="menu-item">
+                    <i class="bi bi-chat-dots"></i>AI智能问答
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/aigraph/settings" class="menu-item">
+                    <i class="bi bi-gear"></i>系统设置
+                </a>
+                <a href="/aigraph/profile" class="menu-item">
+                    <i class="bi bi-person"></i>个人中心
+                </a>
+                <a href="/aigraph/logout" class="menu-item">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+                </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-navbar">
+            <!-- 标题 -->
+            <div class="navbar-title">
+                <h4>知识图谱</h4>
+                        </div>
+            
+            <div class="navbar-right">
+                <div class="nav-icon-btn" title="消息通知">
+                        <i class="bi bi-bell"></i>
+                        <span class="badge bg-danger">3</span>
+                            </div>
+                            
+                <!-- 移除了学习助手按钮 -->
+                
+                <div class="user-dropdown dropdown">
+                    <button class="dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                        <span th:text="${username}">用户名</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                                </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-header">
+                                <strong th:text="${username}">用户名</strong>
+                                <p class="mb-0">管理员</p>
+                            </div>
+                                    </li>
+                        <li><a class="dropdown-item" href="/aigraph/profile" id="profileLink"><i class="bi bi-person"></i> 个人资料</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/settings" id="settingsLink"><i class="bi bi-gear"></i> 账号设置</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/aigraph/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                                </ul>
+                </div>
+            </div>
+                            </div>
+                            
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 知识图谱可视化区域 -->
+            <div class="graph-container">
+                <!-- 加载覆盖层 -->
+                
+                
+                <!-- 工具栏 -->
+                <div class="graph-toolbar">
+                    <!-- 搜索工具 -->
+                    <div class="search-box">
+                        <form id="searchForm">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="搜索知识点...">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="toolbar-buttons">
+                        <button type="button" class="btn btn-outline-primary" id="zoomInBtn" title="放大">
+                                <i class="bi bi-zoom-in"></i>
+                            </button>
+                        <button type="button" class="btn btn-outline-primary" id="zoomOutBtn" title="缩小">
+                                <i class="bi bi-zoom-out"></i>
+                            </button>
+                        <button type="button" class="btn btn-outline-primary" id="resetViewBtn" title="重置视图">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        <button type="button" class="btn btn-outline-primary" id="focusModeBtn" title="聚焦模式">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="exportBtn" title="导出图谱">
+                            <i class="bi bi-download"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="togglePathBtn" title="显示学习路径">
+                            <i class="bi bi-signpost-split"></i>
+                            </button>
+                        </div>
+                    
+                    <!-- 筛选控件 -->
+                    <div class="filter-controls">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-funnel"></i> 筛选
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><h6 class="dropdown-header">知识点类型</h6></li>
+                                <li>
+                                    <div class="dropdown-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input node-filter" type="checkbox" id="filterConcept" checked>
+                                            <label class="form-check-label" for="filterConcept">基础概念</label>
+                    </div>
+                </div>
+                                </li>
+                                <li>
+                                    <div class="dropdown-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input node-filter" type="checkbox" id="filterTech" checked>
+                                            <label class="form-check-label" for="filterTech">技术方法</label>
+                        </div>
+                    </div>
+                                </li>
+                                <li>
+                                    <div class="dropdown-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input node-filter" type="checkbox" id="filterCase" checked>
+                                            <label class="form-check-label" for="filterCase">应用案例</label>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="layoutDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-grid"></i> 布局
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="layoutDropdown">
+                                <li><a class="dropdown-item layout-option active" data-layout="force" href="#">力导向布局</a></li>
+                                <li><a class="dropdown-item layout-option" data-layout="hierarchical" href="#">层次布局</a></li>
+                                <li><a class="dropdown-item layout-option" data-layout="radial" href="#">放射状布局</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                            </div>
+                            
+                <!-- 图谱画布容器 -->
+                <div id="graphCanvas"></div>
+                            </div>
+                            
+            <!-- 知识点详情面板 -->
+            <div id="detailPanel" class="detail-panel">
+                <div class="detail-panel-header">
+                    <h5>知识点详情</h5>
+                    <button id="toggleDetailPanel" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-chevron-left"></i>
+                                </button>
+                            </div>
+                <div class="detail-panel-body">
+                    <div class="no-selected-node text-center py-5">
+                        <i class="bi bi-info-circle-fill text-muted mb-3" style="font-size: 3rem;"></i>
+                        <p>点击图谱中的节点<br>查看详细信息</p>
+                        </div>
+                    
+                    <div class="selected-node-details" style="display: none;">
+                        <div class="detail-header">
+                            <h4 id="nodeName">知识点名称</h4>
+                            <span id="nodeCategory" class="category-badge">类别</span>
+                    </div>
+                    
+                        <div class="detail-section">
+                            <div class="detail-label">难度级别</div>
+                            <div id="nodeDifficulty" class="difficulty-stars"></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-label">所属单元</div>
+                            <div id="nodeUnit" class="unit-info"></div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-label">关联知识点</div>
+                            <div id="relatedNodes" class="related-nodes-list">
+                                <span class="related-node-tag">尚未选择节点</span>
+                        </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-label">学习资料</div>
+                            <div id="nodeMaterials" class="learning-materials">
+                                <div class="material-placeholder">选择节点查看相关学习资料</div>
+                        </div>
+                        </div>
+                        
+                        <div class="detail-actions">
+                            <button class="btn btn-sm btn-primary" id="exploreNode">
+                                <i class="bi bi-search"></i> 深入探索
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="addToPath">
+                                <i class="bi bi-plus-circle"></i> 添加到学习路径
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/d3js/5.16.0/d3.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    
+    <script>
+        // 等待文档加载完成
+        $(document).ready(function() {
+            console.log('文档加载完成，开始初始化图谱');
+            
+            // 确认必要的库已加载
+            if (typeof vis === 'undefined') {
+                console.error('vis.js 库未加载');
+                showLoadingError('vis.js 库未加载，请刷新页面或检查网络连接');
+                return;
+            }
+            
+            // 初始化动画库
+            AOS.init();
+            
+            // 初始化全局变量
+            let nodes, edges, network;
+            let currentLayout = 'force';
+            let selectedNode = null;
+            
+            // 初始化图谱
+            initializeGraph();
+            
+            // 初始化图谱函数
+            function initializeGraph() {
+                try {
+                    console.log('开始初始化知识图谱');
+                    // 显示加载动画
+                    $('#loading-overlay').show();
+                    
+                    // 创建数据集
+                    nodes = new vis.DataSet();
+                    edges = new vis.DataSet();
+                    
+                    // 先加载数据
+                    loadKnowledgeGraphData();
+                    
+                    // 然后创建网络图
+                    createNetwork();
+                    
+                    // 初始化界面交互
+                    initializeInterface();
+                    
+                    // 隐藏加载动画
+                    setTimeout(() => {
+                        $('#loading-overlay').fadeOut(300);
+                    }, 500);
+                    
+                    console.log('知识图谱初始化完成');
+                } catch (error) {
+                    console.error('知识图谱初始化失败:', error);
+                    showLoadingError('知识图谱初始化失败: ' + error.message);
+                }
+            }
+            
+            // 显示加载错误
+            function showLoadingError(message) {
+                $('#loading-overlay').html(`
+                    <div class="error-message text-center">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                        <h3 class="mt-3">加载知识图谱失败</h3>
+                        <p class="text-danger">${message}</p>
+                        <button class="btn btn-primary mt-3" onclick="location.reload()">重新加载</button>
+                    </div>
+                `);
+            }
+            
+            // 加载知识图谱数据 - 简化版，直接使用静态数据
+            function loadKnowledgeGraphData() {
+                console.log('开始加载知识图谱数据');
+                try {
+                    // 简化的知识图谱数据 - 大数据技术核心概念
+                    const knowledgeNodes = [
+                        // 核心概念节点
+                        { id: 1, label: "大数据", group: "concept", level: 1 },
+                        { id: 2, label: "数据采集", group: "concept", level: 2 },
+                        { id: 3, label: "数据存储", group: "concept", level: 3 },
+                        { id: 4, label: "数据处理", group: "concept", level: 2 },
+                        { id: 5, label: "数据分析", group: "tech", level: 3 },
+                        { id: 6, label: "数据可视化", group: "tech", level: 3 },
+                        { id: 7, label: "分布式计算", group: "tech", level: 3 },
+                        { id: 8, label: "MapReduce", group: "tech", level: 4 },
+                        { id: 9, label: "Spark", group: "tech", level: 4 },
+                        { id: 10, label: "Hadoop", group: "tech", level: 4 },
+                        { id: 11, label: "HDFS", group: "tech", level: 2 },
+                        { id: 12, label: "HBase", group: "tech", level: 3 },
+                        { id: 13, label: "数据仓库", group: "tech", level: 3 },
+                        { id: 14, label: "数据湖", group: "tech", level: 3 },
+                        { id: 15, label: "ETL", group: "tech", level: 3 },
+                        { id: 16, label: "数据挖掘", group: "case", level: 3 },
+                        { id: 17, label: "机器学习", group: "case", level: 3 },
+                        { id: 18, label: "推荐系统", group: "case", level: 3 },
+                        { id: 19, label: "风险控制", group: "case", level: 3 },
+                        { id: 20, label: "智能交通", group: "case", level: 4 }
+                    ];
+                    
+                    const relationships = [
+                        // 层次关系
+                        { from: 1, to: 2, label: "包含", type: "inclusion" },
+                        { from: 1, to: 3, label: "包含", type: "inclusion" },
+                        { from: 1, to: 4, label: "包含", type: "inclusion" },
+                        { from: 1, to: 5, label: "包含", type: "inclusion" },
+                        
+                        // 技术方向
+                        { from: 1, to: 6, label: "研究方向", type: "research" },
+                        { from: 1, to: 7, label: "研究方向", type: "research" },
+                        { from: 5, to: 16, label: "应用于", type: "applies_to" },
+                        { from: 5, to: 17, label: "应用于", type: "applies_to" },
+                        
+                        // 存储关系
+                        { from: 3, to: 11, label: "技术", type: "variant" },
+                        { from: 3, to: 12, label: "技术", type: "variant" },
+                        { from: 3, to: 13, label: "技术", type: "variant" },
+                        { from: 3, to: 14, label: "技术", type: "variant" },
+                        
+                        // 组件关系
+                        { from: 10, to: 11, label: "组件", type: "component" },
+                        { from: 10, to: 8, label: "计算框架", type: "method" },
+                        { from: 7, to: 8, label: "包含", type: "component" },
+                        { from: 7, to: 9, label: "包含", type: "uses" },
+                        
+                        // 应用关系
+                        { from: 16, to: 18, label: "应用于", type: "applied_in" },
+                        { from: 17, to: 18, label: "应用于", type: "applied_in" },
+                        { from: 17, to: 19, label: "应用于", type: "applied_in" },
+                        { from: 5, to: 19, label: "应用于", type: "applied_in" },
+                        { from: 5, to: 20, label: "应用于", type: "applied_in" }
+                    ];
+                    
+                    console.log(`准备加载 ${knowledgeNodes.length} 个节点和 ${relationships.length} 个关系`);
+                    
+                    // 设置节点样式
+                    knowledgeNodes.forEach(node => {
+                            if (node.group === "concept") {
+                                node.color = { 
+                                    background: '#4361ee', 
+                                    border: '#364fc7',
+                                    highlight: {
+                                        background: '#4895ef',
+                                        border: '#364fc7'
+                                    }
+                                };
+                                node.shape = 'ellipse';
+                            } else if (node.group === "tech") {
+                                node.color = { 
+                                    background: '#4cc9f0', 
+                                    border: '#3bb3d9',
+                                    highlight: {
+                                        background: '#56cff6',
+                                        border: '#3bb3d9'
+                                    }
+                                };
+                                node.shape = 'box';
+                            } else if (node.group === "case") {
+                                node.color = { 
+                                    background: '#f72585', 
+                                    border: '#e01e79',
+                                    highlight: {
+                                        background: '#f7418e',
+                                        border: '#e01e79'
+                                    }
+                                };
+                                node.shape = 'hexagon';
+                        }
+                        
+                        // 根据重要性调整节点大小
+                        node.size = 20 + (node.level * 3);
+                        
+                        // 字体设置
+                                node.font = { 
+                                    size: 14,
+                                    face: 'Noto Sans SC',
+                                    color: '#ffffff',
+                                    bold: true
+                                };
+                    });
+                    
+                    // 设置边的样式
+                    relationships.forEach(edge => {
+                            // 根据关系类型设置颜色
+                        if (edge.type === "inclusion") {
+                            // 包含关系
+                                edge.color = { color: '#00aa00', highlight: '#00dd00' };
+                        } else if (edge.type === "evolved_from" || edge.type === "based_on") {
+                                // 发展/起源关系
+                                edge.color = { color: '#e74c3c', highlight: '#ff5555' };
+                        } else if (edge.type === "applies_to" || edge.type === "applied_in") {
+                            // 应用关系
+                                edge.color = { color: '#3498db', highlight: '#5555ff' };
+                        } else if (edge.type === "research" || edge.type === "variant") {
+                            // 研究方向
+                                edge.color = { color: '#9b59b6', highlight: '#ac73c9' };
+                        } else if (edge.type === "component" || edge.type === "method" || edge.type === "uses") {
+                            // 组件/方法关系
+                            edge.color = { color: '#f39c12', highlight: '#f1c40f' };
+                            } else {
+                            // 默认颜色
+                            edge.color = { color: '#7f8c8d', highlight: '#95a5a6' };
+                        }
+                        
+                        // 通用边设置
+                        edge.width = 2;
+                            edge.arrows = {
+                            to: {
+                                enabled: true,
+                                scaleFactor: 0.8
+                            }
+                        };
+                            edge.font = {
+                            color: '#444444',
+                                size: 12,
+                                face: 'Noto Sans SC',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                                strokeWidth: 0
+                            };
+                    });
+                    
+                    // 将节点和边添加到数据集
+                        nodes.add(knowledgeNodes);
+                        edges.add(relationships);
+                        
+                    console.log('知识图谱数据加载完成');
+                    } catch (error) {
+                    console.error('知识图谱数据加载失败:', error);
+                    showLoadingError('知识图谱数据加载失败: ' + error.message);
+                    throw error;
+                }
+            }
+            
+            // 创建知识图谱网络
+            function createNetwork() {
+                console.log('创建知识图谱网络');
+                
+                try {
+                    // 获取容器元素
+                    const container = document.getElementById('graphCanvas');
+                    
+                    // 创建数据对象
+                    const data = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                    
+                    // 配置选项
+                    const options = {
+                        nodes: {
+                            shape: 'dot',
+                            size: 25,
+                            font: {
+                                face: 'Noto Sans SC',
+                                size: 14,
+                                color: '#ffffff'
+                            },
+                            borderWidth: 2,
+                            shadow: {
+                                enabled: true,
+                                color: 'rgba(0,0,0,0.2)',
+                                size: 5
+                            }
+                        },
+                        edges: {
+                            width: 2,
+                            color: {
+                                color: '#848484',
+                                highlight: '#1E88E5'
+                            },
+                            font: {
+                                face: 'Noto Sans SC',
+                                size: 12,
+                                color: '#363636',
+                                strokeWidth: 0,
+                                background: 'rgba(255, 255, 255, 0.8)'
+                            },
+                            smooth: {
+                                type: 'continuous',
+                                forceDirection: 'none',
+                                roundness: 0.2
+                            }
+                        },
+                        physics: {
+                            enabled: true,
+                            barnesHut: {
+                                gravitationalConstant: -5000,
+                                centralGravity: 0.3,
+                                springLength: 150,
+                                springConstant: 0.04,
+                                damping: 0.09,
+                                avoidOverlap: 0.2
+                            },
+                            stabilization: {
+                                enabled: true,
+                                iterations: 1000,
+                                updateInterval: 25,
+                                fit: true
+                            },
+                            solver: 'barnesHut'
+                        },
+                        interaction: {
+                            navigationButtons: true,
+                            keyboard: true,
+                            hover: true,
+                            selectable: true,
+                            multiselect: false,
+                            tooltipDelay: 200,
+                            hideEdgesOnDrag: true,
+                            hideEdgesOnZoom: false
+                        },
+                        layout: {
+                            improvedLayout: true,
+                            randomSeed: 42
+                        }
+                    };
+                    
+                    // 创建网络
+                    network = new vis.Network(container, data, options);
+                    
+                    // 添加网络事件
+                    addNetworkEvents();
+                    
+                    console.log('知识图谱网络创建完成');
+                    return network;
+                } catch (error) {
+                    console.error('创建知识图谱网络失败:', error);
+                    showLoadingError('创建知识图谱网络失败: ' + error.message);
+                    throw error;
+                }
+            }
+            
+            // 添加网络事件
+            function addNetworkEvents() {
+                console.log('添加网络事件');
+                
+                // 选择节点事件
+                network.on('selectNode', function(params) {
+                    if (params.nodes.length > 0) {
+                        const nodeId = params.nodes[0];
+                        const node = nodes.get(nodeId);
+                        
+                        console.log('选中节点:', node);
+                        
+                        // 显示节点详情
+                        showNodeDetails(node);
+                        
+                        // 高亮相关节点
+                        highlightNode(nodeId);
+                    }
+                });
+                
+                // 点击空白处事件
+                network.on('deselectNode', function() {
+                    console.log('取消选择节点');
+                    
+                    // 清除所有节点高亮
+                    clearNodeHighlight();
+                    
+                    // 隐藏节点详情
+                    hideNodeDetails();
+                });
+                
+                // 缩放事件
+                network.on('zoom', function() {
+                    // 可以在这里添加缩放相关逻辑
+                });
+                
+                // 稳定化开始事件
+                network.on('stabilizationStart', function() {
+                    console.log('网络稳定化开始');
+                    $('#loading-overlay').html(`
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">优化布局中...</span>
+                            </div>
+                            <div>优化图谱布局中...</div>
+                        </div>
+                    `);
+                    $('#loading-overlay').show();
+                });
+                
+                // 稳定化完成事件
+                network.on('stabilizationDone', function() {
+                    console.log('网络稳定化完成');
+                    $('#loading-overlay').fadeOut(300);
+                });
+                
+                // 悬停节点事件
+                network.on('hoverNode', function() {
+                    document.body.style.cursor = 'pointer';
+                });
+                
+                // 离开节点事件
+                network.on('blurNode', function() {
+                    document.body.style.cursor = 'default';
+                });
+                
+                console.log('网络事件监听设置完成');
+            }
+            
+            // 显示节点详情
+            function showNodeDetails(node) {
+                // 显示节点详情面板
+                $('.no-selected-node').hide();
+                $('.selected-node-details').show();
+                
+                // 更新节点信息
+                $('#nodeName').text(node.label);
+                $('#nodeCategory').text(node.group === 'concept' ? '基础概念' : 
+                                       (node.group === 'tech' ? '技术方法' : '应用案例'));
+                
+                // 类别徽章样式
+                if (node.group === 'concept') {
+                    $('#nodeCategory').attr('class', 'category-badge concept-badge');
+                } else if (node.group === 'tech') {
+                    $('#nodeCategory').attr('class', 'category-badge tech-badge');
+                } else {
+                    $('#nodeCategory').attr('class', 'category-badge case-badge');
+                }
+                
+                // 更新难度级别 (1-5)
+                const difficulty = node.level || 1;
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < difficulty) {
+                        starsHtml += '<i class="bi bi-star-fill text-warning"></i>';
+                    } else {
+                        starsHtml += '<i class="bi bi-star text-muted"></i>';
+                    }
+                }
+                $('#nodeDifficulty').html(starsHtml);
+                
+                // 更新所属单元
+                $('#nodeUnit').text(node.group === 'concept' ? '基础概念' : 
+                                   (node.group === 'tech' ? '技术方法' : '应用案例'));
+                
+                // 默认相关学习资料
+                $('#nodeMaterials').html(`
+                    <div class="material-item">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <a href="#" class="material-link">${node.label}学习资料</a>
+                    </div>
+                    <div class="material-item">
+                        <i class="bi bi-file-earmark-slides"></i>
+                        <a href="#" class="material-link">相关课件</a>
+                    </div>
+                    <div class="material-item">
+                        <i class="bi bi-link-45deg"></i>
+                        <a href="#" class="material-link">在线资源</a>
+                    </div>
+                `);
+                
+                // 更新关联节点
+                updateRelatedNodes(node);
+            }
+            
+            // 更新关联节点列表
+            function updateRelatedNodes(node) {
+                // 获取相关节点
+                const connectedNodeIds = network.getConnectedNodes(node.id);
+                
+                if (connectedNodeIds.length > 0) {
+                    let relatedHtml = '';
+                    
+                    // 获取所有相关节点
+                    const connectedNodes = connectedNodeIds.map(id => {
+                        return {
+                            node: nodes.get(id),
+                            edge: getEdgeBetween(node.id, id)
+                        };
+                    });
+                    
+                    // 按组分类
+                    const groups = {
+                        concept: { name: '基础概念', nodes: [] },
+                        tech: { name: '技术方法', nodes: [] },
+                        case: { name: '应用案例', nodes: [] }
+                    };
+                    
+                    // 分组
+                    connectedNodes.forEach(item => {
+                        if (item.node && groups[item.node.group]) {
+                            groups[item.node.group].nodes.push(item);
+                        }
+                    });
+                    
+                    // 生成HTML
+                    Object.values(groups).forEach(group => {
+                        if (group.nodes.length > 0) {
+                            relatedHtml += `<div class="relation-group mb-2">
+                                <div class="relation-group-title">${group.name}</div>`;
+                            
+                            group.nodes.forEach(item => {
+                                const relationship = item.edge ? item.edge.label : '关联';
+                                
+                                relatedHtml += `
+                                    <div class="related-node-item" data-node-id="${item.node.id}">
+                                        <span class="node-badge ${item.node.group}-badge">${item.node.label}</span>
+                                        <span class="relation-label">(${relationship})</span>
+                                    </div>
+                                `;
+                            });
+                            
+                            relatedHtml += `</div>`;
+                        }
+                    });
+                    
+                    $('#relatedNodes').html(relatedHtml);
+                    
+                    // 添加点击事件
+                    $('.related-node-item').on('click', function() {
+                        const nodeId = $(this).data('node-id');
+                        selectNode(nodeId);
+                    });
+                    } else {
+                    $('#relatedNodes').html('<div class="no-related-nodes">没有关联的知识点</div>');
+                }
+            }
+            
+            // 获取两节点间的边
+            function getEdgeBetween(nodeId1, nodeId2) {
+                const edgeIds = network.getConnectedEdges(nodeId1);
+                const connectedEdges = edges.get(edgeIds);
+                
+                return connectedEdges.find(edge => 
+                    (edge.from === nodeId1 && edge.to === nodeId2) || 
+                    (edge.from === nodeId2 && edge.to === nodeId1)
+                );
+            }
+            
+            // 选择节点
+            function selectNode(nodeId) {
+                network.selectNodes([nodeId]);
+                const node = nodes.get(nodeId);
+                showNodeDetails(node);
+                highlightNode(nodeId);
+                
+                // 聚焦到节点
+                network.focus(nodeId, {
+                    scale: 1.2,
+                    animation: true
+                });
+            }
+            
+            // 高亮节点
+            function highlightNode(nodeId) {
+                // 获取所有节点
+                const allNodeIds = nodes.getIds();
+                
+                // 获取连接的节点
+                const connectedNodeIds = network.getConnectedNodes(nodeId);
+                
+                // 设置节点样式
+                allNodeIds.forEach(id => {
+                    let opacity = 0.3;
+                    let borderWidth = 1;
+                    
+                    if (id === nodeId) {
+                        // 当前选中节点
+                        opacity = 1;
+                        borderWidth = 3;
+                    } else if (connectedNodeIds.includes(id)) {
+                        // 相关节点
+                        opacity = 0.8;
+                        borderWidth = 2;
+                    }
+                    
+                    nodes.update({
+                        id: id,
+                        opacity: opacity,
+                        borderWidth: borderWidth
+                    });
+                });
+                
+                // 设置边样式
+                const allEdgeIds = edges.getIds();
+                allEdgeIds.forEach(id => {
+                    const edge = edges.get(id);
+                    let opacity = 0.2;
+                    let width = 1;
+                    
+                    if (edge.from === nodeId || edge.to === nodeId) {
+                        // 与当前节点相连的边
+                        opacity = 1;
+                        width = 2;
+                    }
+                    
+                    edges.update({
+                        id: id,
+                        color: {
+                            opacity: opacity
+                        },
+                        width: width
+                    });
+                });
+            }
+            
+            // 清除节点高亮
+            function clearNodeHighlight() {
+                // 恢复所有节点样式
+                const allNodeIds = nodes.getIds();
+                allNodeIds.forEach(id => {
+                        nodes.update({
+                            id: id,
+                        opacity: 1,
+                        borderWidth: 2
+                    });
+                });
+                
+                // 恢复所有边样式
+                const allEdgeIds = edges.getIds();
+                allEdgeIds.forEach(id => {
+                    edges.update({
+                        id: id,
+                        color: {
+                            opacity: 1
+                        },
+                        width: 2
+                    });
+                });
+            }
+            
+            // 隐藏节点详情
+            function hideNodeDetails() {
+                $('.selected-node-details').hide();
+                $('.no-selected-node').show();
+            }
+            
+            // 初始化界面交互
+            function initializeInterface() {
+                console.log('初始化界面交互');
+                
+                // 侧边栏折叠/展开
+                $('#sidebarCollapseBtn').on('click', function() {
+                    $('.sidebar').toggleClass('collapsed');
+                    $('.main-content').toggleClass('expanded');
+                    
+                    // 重新适应网络视图
+                    setTimeout(() => {
+                        if (network) network.fit();
+                    }, 300);
+                });
+                
+                // 详情面板折叠/展开
+                $('#toggleDetailPanel').on('click', function() {
+                    const panel = $('#detailPanel');
+                    panel.toggleClass('collapsed');
+                    
+                    if (panel.hasClass('collapsed')) {
+                        $(this).html('<i class="bi bi-chevron-right"></i>');
+                    } else {
+                        $(this).html('<i class="bi bi-chevron-left"></i>');
+                    }
+                    
+                    // 重新适应网络视图
+                    setTimeout(() => {
+                        if (network) network.fit();
+                    }, 300);
+                });
+                
+                // 放大按钮
+                $('#zoomInBtn').on('click', function() {
+                    if (network) network.zoom(1.2);
+                });
+                
+                // 缩小按钮
+                $('#zoomOutBtn').on('click', function() {
+                    if (network) network.zoom(0.8);
+                });
+                
+                // 重置视图按钮
+                $('#resetViewBtn').on('click', function() {
+                    if (network) network.fit();
+                });
+                
+                // 搜索表单提交
+                $('#searchForm').on('submit', function(e) {
+                    e.preventDefault();
+                    const query = $('#searchInput').val().trim().toLowerCase();
+                    
+                    if (query) {
+                        searchGraph(query);
+                    }
+                });
+                
+                // 聚焦模式按钮
+                $('#focusModeBtn').on('click', function() {
+                    $(this).toggleClass('active');
+                    
+                    if ($(this).hasClass('active')) {
+                        // 进入聚焦模式
+                        $('.top-navbar, .navbar-title, .sidebar').css('opacity', '0.2');
+                        $('.detail-panel').addClass('focus-mode');
+                    } else {
+                        // 退出聚焦模式
+                        $('.top-navbar, .navbar-title, .sidebar').css('opacity', '1');
+                        $('.detail-panel').removeClass('focus-mode');
+                    }
+                });
+                
+                // 导出按钮
+                $('#exportBtn').on('click', function() {
+                    exportGraph();
+                });
+                
+                // 切换学习路径按钮
+                $('#togglePathBtn').on('click', function() {
+                    toggleLearningPath();
+                });
+                
+                // 筛选器变化事件
+                $('.node-filter, .relation-filter').on('change', function() {
+                    filterGraph();
+                });
+                
+                // 布局选项点击事件
+                $('.layout-option').on('click', function(e) {
+                    e.preventDefault();
+                    const layout = $(this).data('layout');
+                    changeLayout(layout);
+                });
+                
+                // 深入探索按钮
+                $('#exploreNode').on('click', function() {
+                    if (selectedNode) {
+                        // 高亮选中节点的关联节点
+                        highlightConnectedNodes(selectedNode);
+                    }
+                });
+                
+                // 添加到学习路径按钮
+                $('#addToPath').on('click', function() {
+                    if (selectedNode) {
+                        addToLearningPath(selectedNode);
+                    }
+                });
+                
+                console.log('界面交互初始化完成');
+            }
+            
+            // 搜索图谱
+            function searchGraph(query) {
+                console.log('搜索图谱:', query);
+                
+                // 搜索节点
+                const allNodes = nodes.get();
+                const matchedNodes = allNodes.filter(node => 
+                    node.label.toLowerCase().includes(query)
+                );
+                
+                if (matchedNodes.length > 0) {
+                    // 显示搜索结果
+                    let resultsHtml = '';
+                    
+                    matchedNodes.forEach(node => {
+                        let badgeClass = '';
+                        if (node.group === 'concept') badgeClass = 'concept-badge';
+                        else if (node.group === 'tech') badgeClass = 'tech-badge';
+                        else badgeClass = 'case-badge';
+                        
+                        resultsHtml += `
+                            <div class="search-result-item" data-node-id="${node.id}">
+                                <span class="result-badge ${badgeClass}">${node.group === 'concept' ? '概念' : 
+                                                                       (node.group === 'tech' ? '技术' : '案例')}</span>
+                                <span class="result-label">${node.label}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    $('#searchResults').html(resultsHtml).show();
+                    
+                    // 添加结果点击事件
+                    $('.search-result-item').on('click', function() {
+                        const nodeId = $(this).data('node-id');
+                        
+                        // 选中并聚焦到节点
+                        network.selectNodes([nodeId]);
+                        network.focus(nodeId, {
+                            scale: 1.2,
+                            animation: {
+                                duration: 800,
+                                easingFunction: 'easeInOutQuad'
+                            }
+                        });
+                        
+                        // 隐藏搜索结果
+                        $('#searchResults').hide();
+                        $('#searchInput').val('');
+                        });
+                    } else {
+                    // 无搜索结果
+                    $('#searchResults').html('<div class="no-results">未找到匹配的知识点</div>').show();
+                }
+            }
+            
+            // 导出图谱
+            function exportGraph() {
+                console.log('导出图谱');
+                $('#loading-overlay').html(`
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">导出中...</span>
+                        </div>
+                        <div>正在导出图谱...</div>
+                    </div>
+                `);
+                $('#loading-overlay').show();
+                
+                try {
+                    // 使用canvas导出
+                    const canvas = network.canvas.frame.canvas;
+                    const dataURL = canvas.toDataURL('image/png');
+                    
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.href = dataURL;
+                    link.download = '大数据技术知识图谱.png';
+                    
+                    // 触发下载
+                    setTimeout(() => {
+                        link.click();
+                        $('#loading-overlay').fadeOut(300);
+                        
+                        // 显示成功提示
+                        const toast = `
+                            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+                                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header">
+                                        <strong class="me-auto">导出成功</strong>
+                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body">
+                                        知识图谱已成功导出为PNG图片
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        $('body').append(toast);
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                            setTimeout(() => {
+                                $('.toast').parent().remove();
+                            }, 500);
+                        }, 3000);
+                    }, 500);
+                } catch (error) {
+                    console.error('导出图谱失败:', error);
+                    $('#loading-overlay').html(`
+                        <div class="error-message text-center">
+                            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                            <h3 class="mt-3">导出失败</h3>
+                            <p class="text-danger">${error.message}</p>
+                            <button class="btn btn-primary mt-3" onclick="$('#loading-overlay').fadeOut(300)">关闭</button>
+                        </div>
+                    `);
+                }
+            }
+            
+            // 显示学习路径
+            function toggleLearningPath() {
+                const button = $('#togglePathBtn');
+                button.toggleClass('active');
+                
+                if (button.hasClass('active')) {
+                    button.attr('title', '隐藏学习路径');
+                    
+                    // 构建推荐学习路径 - 基于核心概念之间的关系
+                    const learningPath = [1, 2, 7, 3, 4, 11, 12, 13, 14, 15, 8, 9, 10, 5, 6, 16, 17, 18, 19, 20];
+                
+                // 保存原始颜色
+                    const allNodeIds = nodes.getIds();
+                    allNodeIds.forEach(nodeId => {
+                        const node = nodes.get(nodeId);
+                if (!node.originalColor) {
+                    nodes.update({
+                        id: nodeId,
+                        originalColor: node.color
+                    });
+                }
+                    });
+                    
+                    // 高亮学习路径节点
+                    learningPath.forEach((nodeId, index) => {
+                        // 检查节点是否存在
+                        if (nodes.get(nodeId)) {
+                            // 渐变颜色 - 从浅绿到深绿，表示学习进展
+                            const progress = index / learningPath.length;
+                            const r = Math.round(76 - progress * 30);
+                            const g = Math.round(175 - progress * 30);
+                            const b = Math.round(80 - progress * 40);
+                            
+                nodes.update({
+                    id: nodeId,
+                    color: {
+                                    background: `rgb(${r}, ${g}, ${b})`,
+                        border: '#2e7d32',
+                        highlight: {
+                                        background: `rgb(${r+20}, ${g+20}, ${b+20})`,
+                            border: '#2e7d32'
+                        }
+                                },
+                                font: {
+                                    color: '#ffffff'
+                                }
+                            });
+                            
+                            // 添加序号标签
+                            nodes.update({
+                                id: nodeId,
+                                label: `${index+1}. ${nodes.get(nodeId).label.replace(/^\d+\.\s+/, '')}`
+                            });
+                        }
+                    });
+                    
+                    // 添加学习路径连接边
+                    const pathEdges = [];
+                    for (let i = 0; i < learningPath.length - 1; i++) {
+                        // 检查两个节点是否都存在
+                        if (nodes.get(learningPath[i]) && nodes.get(learningPath[i+1])) {
+                            pathEdges.push({
+                                id: `path_${learningPath[i]}_${learningPath[i+1]}`,
+                                from: learningPath[i],
+                                to: learningPath[i+1],
+                                color: {
+                                    color: '#4caf50',
+                                    highlight: '#66bb6a',
+                                    opacity: 1
+                                },
+                                width: 3,
+                                arrows: {
+                                    to: {
+                                        enabled: true,
+                                        scaleFactor: 1
+                                    }
+                                },
+                                dashes: [5, 5],
+                                label: '学习顺序',
+                                font: {
+                                    color: '#4caf50',
+                                    background: 'white'
+                                }
+                            });
+                        }
+                    }
+                    
+                    // 添加路径边
+                    edges.add(pathEdges);
+                
+                // 显示提示信息
+                const toast = `
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                    <strong class="me-auto">学习路径已显示</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                    绿色节点和虚线表示推荐的学习顺序
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('body').append(toast);
+                setTimeout(() => {
+                    $('.toast').toast('hide');
+                    setTimeout(() => {
+                        $('.toast').parent().remove();
+                    }, 500);
+                }, 3000);
+                } else {
+                    button.attr('title', '显示学习路径');
+                    
+                    // 恢复原始节点颜色和标签
+                    const allNodeIds = nodes.getIds();
+                    allNodeIds.forEach(nodeId => {
+                        const node = nodes.get(nodeId);
+                        if (node.originalColor) {
+                            // 恢复原始颜色
+                            nodes.update({
+                                id: nodeId,
+                                color: node.originalColor
+                            });
+                            
+                            // 恢复原始标签
+                            const originalLabel = node.label.includes('. ') ? 
+                                node.label.substring(node.label.indexOf('. ') + 2) : 
+                                node.label;
+                            
+                            nodes.update({
+                                id: nodeId,
+                                label: originalLabel
+                            });
+                        }
+                    });
+                    
+                    // 移除学习路径边
+                    const pathEdges = edges.get().filter(edge => edge.id.startsWith('path_'));
+                    edges.remove(pathEdges);
+                }
+            }
+            
+            // 生成学习资料链接
+            function generateLearningMaterials(fileList) {
+                let html = '';
+                fileList.forEach(file => {
+                    html += `
+                        <div class="material-item">
+                            <i class="bi bi-file-text"></i>
+                            <a href="/aigraph/learning-materials?file=${encodeURIComponent(file)}" class="material-link" target="_blank">${file}</a>
+                        </div>
+                    `;
+                });
+                return html;
+            }
+            
+            // 筛选图谱
+            function filterGraph() {
+                // 获取选中的节点类型
+                const showConcept = $('#filterConcept').is(':checked');
+                const showTech = $('#filterTech').is(':checked');
+                const showCase = $('#filterCase').is(':checked');
+                
+                // 获取选中的关系类型
+                const selectedRelations = $('.relation-filter:checked').map(function() {
+                    return $(this).val();
+                }).get();
+                
+                // 筛选节点
+                const allNodes = nodes.get();
+                allNodes.forEach(node => {
+                    const visible = (node.group === 'concept' && showConcept) || 
+                                   (node.group === 'tech' && showTech) || 
+                                   (node.group === 'case' && showCase);
+                    
+                    nodes.update({ 
+                        id: node.id, 
+                        hidden: !visible 
+                    });
+                });
+                
+                // 筛选边
+                const allEdges = edges.get();
+                allEdges.forEach(edge => {
+                    // 如果关联的节点被隐藏，边也应该被隐藏
+                    const fromNode = nodes.get(edge.from);
+                    const toNode = nodes.get(edge.to);
+                    const nodesVisible = !fromNode.hidden && !toNode.hidden;
+                    
+                    // 检查边的类型是否在选中的关系中
+                    const relationVisible = selectedRelations.includes(edge.label);
+                    
+                    edges.update({ 
+                        id: edge.id, 
+                        hidden: !(nodesVisible && relationVisible) 
+                    });
+                });
+            }
+            
+            // 更改布局
+            function changeLayout(layout) {
+                currentLayout = layout;
+                
+                $('#loading-overlay').html(`
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">布局调整中...</span>
+                        </div>
+                        <div>正在切换到${layout === 'hierarchical' ? '层次布局' : (layout === 'force' ? '力导向布局' : '聚类布局')}...</div>
+                    </div>
+                `);
+                $('#loading-overlay').show();
+                
+                // 设置物理引擎选项
+                let physics = {};
+                let layoutOptions = {};
+                
+                switch (layout) {
+                    case 'hierarchical':
+                        // 层次布局 - 适合展示层级关系
+                        physics = {
+                            enabled: true,
+                            hierarchicalRepulsion: {
+                                nodeDistance: 150,
+                                centralGravity: 0.0,
+                                springLength: 150,
+                                springConstant: 0.01,
+                                damping: 0.09
+                            },
+                            solver: 'hierarchicalRepulsion'
+                        };
+                        
+                        layoutOptions = {
+                            hierarchical: {
+                                direction: 'UD', // 自上而下
+                                sortMethod: 'directed',
+                                nodeSpacing: 150,
+                                treeSpacing: 200,
+                                blockShifting: true,
+                                edgeMinimization: true,
+                                levelSeparation: 150
+                            }
+                        };
+                        break;
+                    
+                    case 'force':
+                        // 力导向布局 - 适合展示网络关系
+                        physics = {
+                            enabled: true,
+                            barnesHut: {
+                                gravitationalConstant: -5000,
+                                centralGravity: 0.5,
+                                springLength: 150,
+                                springConstant: 0.04,
+                                damping: 0.1,
+                                avoidOverlap: 0.5
+                            },
+                            stabilization: {
+                                iterations: 1000
+                            }
+                        };
+                        
+                        layoutOptions = {
+                            hierarchical: false
+                        };
+                        break;
+                    
+                    case 'cluster':
+                        // 聚类布局 - 突出社区结构
+                        physics = {
+                            enabled: true,
+                            forceAtlas2Based: {
+                                gravitationalConstant: -50,
+                                centralGravity: 0.01,
+                                springLength: 200,
+                                springConstant: 0.08,
+                                damping: 0.4,
+                                avoidOverlap: 0.8
+                            },
+                            solver: 'forceAtlas2Based',
+                            stabilization: {
+                                iterations: 1000
+                            }
+                        };
+                        
+                        layoutOptions = {
+                            hierarchical: false
+                        };
+                        break;
+                }
+                
+                // 设置新布局
+                network.setOptions({
+                    layout: layoutOptions,
+                    physics: physics
+                });
+                
+                // 开始物理引擎模拟
+                network.startSimulation();
+                
+                // 模拟完成后隐藏加载动画
+                setTimeout(() => {
+                    $('#loading-overlay').fadeOut(300);
+                }, 1500);
+            }
+            
+            // 添加到学习路径
+            function addToLearningPath(nodeId) {
+                // 这里可以实现添加到学习路径的功能
+                // 例如显示一个成功提示
+                const node = nodes.get(nodeId);
+                    
+                    // 保存原始颜色
+                        if (!node.originalColor) {
+                            nodes.update({
+                                id: nodeId,
+                                originalColor: node.color
+                            });
+                        }
+                
+                // 高亮显示为学习路径节点
+                            nodes.update({
+                                id: nodeId,
+                                color: {
+                        background: '#4caf50', 
+                                    border: '#2e7d32',
+                                    highlight: {
+                            background: '#66bb6a',
+                                        border: '#2e7d32'
+                                    }
+                    }
+                });
+                    
+                    // 显示提示信息
+                    const toast = `
+                        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+                            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="toast-header">
+                                <strong class="me-auto">成功</strong>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                已添加 "${node.label}" 到学习路径
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('body').append(toast);
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                        setTimeout(() => {
+                            $('.toast').parent().remove();
+                        }, 500);
+                    }, 3000);
+            }
+            
+            // 切换详情面板
+            function toggleDetailPanel() {
+                const panel = $('#detailPanel');
+                panel.toggleClass('collapsed');
+                
+                const button = $('#toggleDetailPanel');
+                if (panel.hasClass('collapsed')) {
+                    button.html('<i class="bi bi-chevron-right"></i>');
+                    $('.graph-container').addClass('expanded');
+                } else {
+                    button.html('<i class="bi bi-chevron-left"></i>');
+                    $('.graph-container').removeClass('expanded');
+                }
+                
+                // 调整网络视图
+                setTimeout(() => {
+                    network.fit();
+                }, 300);
+            }
+            
+            // 关系类型转换为可读标签
+            function relationTypeToLabel(relationType) {
+                const relationLabels = {
+                    'inclusion': '包含/属于关系',
+                    'includes': '包含关系',
+                    'component': '组成部分',
+                    'evolved_from': '演化/起源关系',
+                    'based_on': '基于关系',
+                    'extends': '扩展/继承关系',
+                    'precedes': '前置/先决关系',
+                    'applies': '应用关系',
+                    'applies_to': '应用于',
+                    'uses': '使用关系',
+                    'used_for': '用于',
+                    'implements': '实现关系',
+                    'details': '详解/说明',
+                    'describes': '描述关系',
+                    'solves': '解决关系',
+                    'affects': '影响关系',
+                    'evaluates': '评估关系',
+                    'property': '特性/属性',
+                    'technique': '技术/方法',
+                    'parameter': '参数关系',
+                    'related': '相关关系',
+                    'supports': '支持关系',
+                    'generates': '生成关系',
+                    'core_operation': '核心操作'
+                };
+                
+                return relationLabels[relationType] || '其他关系';
+            }
+            
+            // 获取与节点相连的其他节点
+            function getConnectedNodes(nodeId) {
+                const connectedNodes = [];
+                const edgesList = edges.get();
+                
+                edgesList.forEach(edge => {
+                    if (edge.from === nodeId) {
+                        const connectedNode = nodes.get(edge.to);
+                        if (connectedNode) {
+                            connectedNodes.push(connectedNode);
+                        }
+                    } else if (edge.to === nodeId) {
+                        const connectedNode = nodes.get(edge.from);
+                        if (connectedNode) {
+                            connectedNodes.push(connectedNode);
+                        }
+                    }
+                });
+                
+                return connectedNodes;
+            }
+            
+            // 搜索节点
+            function searchNodes(searchTerm) {
+                // 清空之前的搜索结果
+                $('#searchResults').empty();
+                
+                // 查找匹配的节点
+                const matchingNodes = nodes.get({
+                    filter: node => {
+                        // 搜索标题、章节、单元和关键词
+                        const nodeText = (
+                            node.label + ' ' + 
+                            node.chapter + ' ' + 
+                            (node.unit || '') + ' ' + 
+                            (node.keywords ? node.keywords.join(' ') : '')
+                        ).toLowerCase();
+                        
+                        return nodeText.includes(searchTerm);
+                    }
+                });
+                
+                // 没有找到结果
+                if (matchingNodes.length === 0) {
+                    $('#searchResults').html('<div class="p-3 text-center text-muted">没有找到匹配的知识点</div>');
+                    $('#searchResults').show();
+                    return;
+                }
+                
+                // 显示搜索结果
+                let resultsHtml = '';
+                matchingNodes.forEach(node => {
+                    let badgeClass = '';
+                    let badgeText = '';
+                    
+                    if (node.group === 'concept') {
+                        badgeClass = 'concept-badge';
+                        badgeText = '概念';
+                    } else if (node.group === 'tech') {
+                        badgeClass = 'tech-badge';
+                        badgeText = '技术';
+                    } else {
+                        badgeClass = 'case-badge';
+                        badgeText = '案例';
+                    }
+                    
+                    resultsHtml += `
+                        <div class="search-result-item" data-node-id="${node.id}">
+                            <div class="search-result-name">${node.label}</div>
+                            <div class="search-result-unit">${node.chapter} - ${node.unit || ''}</div>
+                            <span class="search-result-badge ${badgeClass}">${badgeText}</span>
+                        </div>
+                    `;
+                });
+                
+                $('#searchResults').html(resultsHtml);
+                $('#searchResults').show();
+                
+                // 点击搜索结果跳转到相应节点
+                $('.search-result-item').on('click', function() {
+                    const nodeId = $(this).data('node-id');
+                    const node = nodes.get(nodeId);
+                    
+                    // 选中节点
+                    network.selectNodes([nodeId]);
+                    
+                    // 聚焦到节点
+                    network.focus(nodeId, {
+                        scale: 1.2,
+                        animation: {
+                            duration: 800,
+                            easingFunction: 'easeInOutQuad'
+                        }
+                    });
+                    
+                    // 显示节点详情
+                    showNodeDetails(node);
+                    
+                    // 高亮相关节点
+                    highlightConnectedNodes(nodeId);
+                    
+                    // 隐藏搜索结果
+                    $('#searchResults').hide();
+                    $('#searchInput').val('');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">知识图谱系统 - 课程内容</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 70px;
+            --topbar-height: 60px;
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --danger-color: #f43f5e;
+            --dark-color: #0f172a;
+            --dark-blue: #1e2a78;
+            --light-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--primary-light));
+            --gradient-accent: linear-gradient(135deg, var(--accent-color), #b5179e);
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--dark-blue));
+            --gradient-success: linear-gradient(135deg, var(--success-color), #34d399);
+            --card-border-radius: 10px;
+            --transition-speed: 0.3s;
+            --border-radius: 12px;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fb;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            color: var(--gray-700);
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+        
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .sidebar.collapsed .menu-section-title {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .menu-item.active {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all var(--transition-speed) ease;
+            padding-top: var(--topbar-height);
+        }
+        
+        .main-content.expanded {
+            margin-left: var(--sidebar-width-collapsed);
+        }
+        
+        /* 顶部导航栏 */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            height: var(--topbar-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 999;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .top-navbar.expanded {
+            left: var(--sidebar-width-collapsed);
+        }
+        
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar-title h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        /* 用户个人信息下拉框 */
+        .user-dropdown .dropdown-toggle {
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .user-dropdown .dropdown-toggle:focus {
+            box-shadow: none;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .user-info {
+            text-align: left;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        /* 内容区域 */
+        .content {
+            padding: 30px;
+            margin-top: 0;
+        }
+        
+        /* 通知小红点 */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+        }
+        
+        /* 通知按钮 */
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        /* 通知下拉菜单 */
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .notification-header h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .notification-items {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            opacity: 0.15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .notification-footer {
+            padding: 15px 20px;
+            text-align: center;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .notification-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* 导航栏按钮样式 */
+        .nav-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+        }
+        
+        .nav-icon-btn:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .nav-icon-btn i {
+            font-size: 1.2rem;
+        }
+        
+        /* 通知弹窗样式 */
+        .notification-popup {
+            position: fixed;
+            top: calc(var(--topbar-height) + 10px);
+            right: 30px;
+            width: 320px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-popup.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .notification-body {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .notification-content {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        /* 导航栏右侧按钮组 */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* 用户下拉菜单样式 */
+        .user-dropdown {
+            position: relative;
+        }
+        
+        .user-dropdown .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .user-dropdown .dropdown-toggle:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* 课程卡片样式 */
+        .course-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 100%;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.125);
+            overflow: hidden;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .course-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.5s ease;
+        }
+        
+        .course-card:hover .course-image {
+            transform: scale(1.05);
+        }
+        
+        .course-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        /* 过滤按钮样式 */
+        .filter-btn {
+            border-radius: 20px;
+            padding: 0.25rem 1rem;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+        }
+        
+        /* 章节列表样式 */
+        .chapter-item {
+            transition: all 0.2s ease;
+        }
+        
+        .chapter-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .chapter-number {
+            color: var(--bs-primary);
+            font-weight: bold;
+        }
+        
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            padding: 0;
+        }
+        
+        .play-btn i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰形状 -->
+    <div class="deco-shape deco-shape-1"></div>
+    <div class="deco-shape deco-shape-2"></div>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-diagram-3-fill"></i> 大数据知识图谱</h3>
+            <i class="bi bi-x-lg d-lg-none" id="close-sidebar" style="cursor: pointer;"></i>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">主要功能</div>
+                <a href="/aigraph/dashboard" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>仪表盘
+                </a>
+                <a href="/aigraph/graph-view" class="menu-item">
+                    <i class="bi bi-graph-up"></i>知识图谱
+                </a>
+                <a href="/aigraph/search" class="menu-item">
+                    <i class="bi bi-search"></i>知识检索
+                </a>
+                <a href="/aigraph/analysis" class="menu-item">
+                    <i class="bi bi-diagram-3"></i>关系分析
+                </a>
+                <a href="/aigraph/visualization" class="menu-item">
+                    <i class="bi bi-bar-chart-line"></i>数据可视化
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">学习资源</div>
+                <a href="/aigraph/courses" class="menu-item active">
+                    <i class="bi bi-journal-text"></i>课程内容
+                </a>
+                <!-- 移除教学案例和学习资料链接 -->
+                <a href="/aigraph/qa" class="menu-item">
+                    <i class="bi bi-chat-dots"></i>AI智能问答
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/aigraph/settings" class="menu-item">
+                    <i class="bi bi-gear"></i>系统设置
+                </a>
+                <a href="/aigraph/profile" class="menu-item">
+                    <i class="bi bi-person"></i>个人中心
+                </a>
+                <a href="/aigraph/logout" class="menu-item">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-navbar">
+            <!-- 标题 -->
+            <div class="navbar-title">
+                <h4>课程内容</h4>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="nav-icon-btn" title="消息通知">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-danger">3</span>
+                </div>
+                
+                <!-- 移除了学习助手按钮 -->
+                
+                <div class="user-dropdown dropdown">
+                    <button class="dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                        <span th:text="${username}">用户名</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-header">
+                                <strong th:text="${username}">用户名</strong>
+                                <p class="mb-0">管理员</p>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="/aigraph/profile" id="profileLink"><i class="bi bi-person"></i> 个人资料</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/settings" id="settingsLink"><i class="bi bi-gear"></i> 账号设置</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/help" id="helpLink"><i class="bi bi-question-circle"></i> 帮助中心</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/aigraph/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知弹窗 -->
+        <div class="notification-popup" id="notificationPopup">
+            <div class="notification-header">
+                <h5>通知</h5>
+                <button class="close-btn" id="closeNotification">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="notification-body">
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-26 08:30</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-25 14:45</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-24 09:15</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- 原有的课程内容保持不变 -->
+                <!-- 课程过滤器 -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">课程过滤</h5>
+                            <div class="d-flex">
+                                <div class="input-group me-3" style="width: 300px;">
+                                    <input type="text" class="form-control" placeholder="搜索课程..." aria-label="搜索课程">
+                                    <button class="btn btn-outline-primary" type="button"><i class="bi bi-search"></i></button>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        排序方式
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                                        <li><a class="dropdown-item" href="#">最新发布</a></li>
+                                        <li><a class="dropdown-item" href="#">最多学习</a></li>
+                                        <li><a class="dropdown-item" href="#">评分最高</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap">
+                            <button class="btn btn-sm me-2 mb-2 filter-btn active">全部课程</button>
+                            <button class="btn btn-sm me-2 mb-2 filter-btn">人工智能基础</button>
+                            <button class="btn btn-sm me-2 mb-2 filter-btn">深度学习</button>
+                            <button class="btn btn-sm me-2 mb-2 filter-btn">机器学习</button>
+                            <button class="btn btn-sm me-2 mb-2 filter-btn">自然语言处理</button>
+                            <button class="btn btn-sm me-2 mb-2 filter-btn">计算机视觉</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 推荐课程 -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">推荐课程</h5>
+                        <button class="btn btn-sm btn-outline-primary">查看全部</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- 动态遍历推荐课程 -->
+                            <div class="col-md-4 mb-4" th:each="course : ${courses}" th:if="${course.recommended}">
+                                <div class="card course-card">
+                                    <div class="course-image" th:style="'background-image: url(' + ${course.imageUrl} + ')'"></div>
+                                    <span class="badge bg-warning course-badge" th:if="${course.isNew}">新课程</span>
+                                    <div class="card-body">
+                                        <h5 class="card-title" th:text="${course.name}">人工智能导论</h5>
+                                        <p class="card-text text-muted" th:text="${course.description}">介绍人工智能的基础概念和应用领域</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> <span th:text="${course.studentCount}">1,240</span> 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> <span th:text="${course.rating}">4.8</span>/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" th:style="'width: ' + ${course.progressPercentage} + '%'" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-primary">继续学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 静态示例（当没有推荐课程时显示） -->
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=AI+基础')"></div>
+                                    <span class="badge bg-warning course-badge">新课程</span>
+                                    <div class="card-body">
+                                        <h5 class="card-title">人工智能导论</h5>
+                                        <p class="card-text text-muted">介绍人工智能的基础概念和应用领域</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 1,240 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.8/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-primary">继续学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=深度学习')"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">深度学习实战</h5>
+                                        <p class="card-text text-muted">从理论到实践，全面掌握深度学习技术</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 986 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.7/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-primary">继续学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=机器学习')"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">机器学习算法</h5>
+                                        <p class="card-text text-muted">分类、回归、聚类等机器学习算法详解</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 1,520 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.9/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-outline-primary">开始学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 所有课程 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">所有课程</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- 动态遍历所有课程 -->
+                            <div class="col-md-4 mb-4" th:each="course : ${courses}">
+                                <div class="card course-card">
+                                    <div class="course-image" th:style="'background-image: url(' + ${course.imageUrl} + ')'"></div>
+                                    <span class="badge bg-warning course-badge" th:if="${course.isNew}">新课程</span>
+                                    <div class="card-body">
+                                        <h5 class="card-title" th:text="${course.name}">课程名称</h5>
+                                        <p class="card-text text-muted" th:text="${course.description}">课程描述</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> <span th:text="${course.studentCount}">0</span> 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> <span th:text="${course.rating}">0.0</span>/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" th:style="'width: ' + ${course.progressPercentage} + '%'" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-primary" th:if="${course.progressPercentage > 0}">继续学习</a>
+                                            <a href="#" class="btn btn-outline-primary" th:if="${course.progressPercentage == 0}">开始学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 静态示例（当没有课程时显示） -->
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=自然语言处理')"></div>
+                                    <span class="badge bg-warning course-badge">新课程</span>
+                                    <div class="card-body">
+                                        <h5 class="card-title">自然语言处理</h5>
+                                        <p class="card-text text-muted">语言模型、文本分类与情感分析</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 865 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.6/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-outline-primary">开始学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=计算机视觉')"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">计算机视觉入门</h5>
+                                        <p class="card-text text-muted">图像处理、目标检测与图像分类</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 732 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.5/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-outline-primary">开始学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-4" th:if="${courses == null || courses.isEmpty()}">
+                                <div class="card course-card">
+                                    <div class="course-image" style="background-image: url('https://via.placeholder.com/500x300?text=强化学习')"></div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">强化学习基础</h5>
+                                        <p class="card-text text-muted">马尔可夫决策过程与Q-learning算法</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><i class="bi bi-people me-1"></i> 450 名学生</small>
+                                            <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> 4.7/5.0</small>
+                                        </div>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="#" class="btn btn-outline-primary">开始学习</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 分页 -->
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">下一页</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    
+    <script>
+        // 侧边栏切换
+        $(document).ready(function() {
+            $('#toggle-sidebar').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#main-content').toggleClass('expanded');
+            });
+            
+            // 通知按钮点击事件
+            $('#notificationBtn').on('click', function() {
+                $('#notificationPopup').toggleClass('show');
+            });
+            
+            // 点击其他地方关闭通知弹窗
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#notificationPopup').length && 
+                    !$(e.target).closest('#notificationBtn').length) {
+                    $('#notificationPopup').removeClass('show');
+                }
+            });
+            
+            // 初始化AOS动画
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+
+            // 课程数据 - 根据讲稿和教案内容构建
+            const courseData = [
+                {
+                    id: 1,
+                    name: "大数据技术导论",
+                    description: "介绍大数据的基本概念、特征和应用场景",
+                    category: "大数据基础",
+                    imageUrl: "https://via.placeholder.com/500x300?text=大数据基础",
+                    studentCount: 1240,
+                    rating: 4.8,
+                    progress: 25,
+                    isNew: true,
+                    chapters: [
+                        { title: "大数据的定义", duration: "45分钟" },
+                        { title: "大数据特征", duration: "50分钟" },
+                        { title: "数据生命周期", duration: "60分钟" },
+                        { title: "大数据发展因素", duration: "55分钟" },
+                        { title: "大数据发展与应用", duration: "45分钟" }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "数据采集与预处理",
+                    description: "数据采集、清洗和转换的基本方法和技术",
+                    category: "数据处理",
+                    imageUrl: "https://via.placeholder.com/500x300?text=数据处理",
+                    studentCount: 1520,
+                    rating: 4.9,
+                    progress: 0,
+                    isNew: false,
+                    chapters: [
+                        { title: "数据采集基础", duration: "50分钟" },
+                        { title: "数据采集方法", duration: "60分钟" },
+                        { title: "数据质量管理", duration: "45分钟" }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "分布式存储系统",
+                    description: "HDFS、HBase等分布式存储系统的架构和原理",
+                    category: "分布式系统",
+                    imageUrl: "https://via.placeholder.com/500x300?text=分布式存储",
+                    studentCount: 980,
+                    rating: 4.7,
+                    progress: 45,
+                    isNew: false,
+                    chapters: [
+                        { title: "分布式存储基础", duration: "40分钟" },
+                        { title: "HDFS架构与原理", duration: "35分钟" },
+                        { title: "HBase存储系统", duration: "55分钟" },
+                        { title: "分布式存储案例", duration: "50分钟" }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "分布式计算框架",
+                    description: "MapReduce、Spark等分布式计算框架的原理和应用",
+                    category: "分布式系统",
+                    imageUrl: "https://via.placeholder.com/500x300?text=分布式计算",
+                    studentCount: 865,
+                    rating: 4.6,
+                    progress: 10,
+                    isNew: true,
+                    chapters: [
+                        { title: "分布式计算基础", duration: "45分钟" },
+                        { title: "MapReduce模型", duration: "60分钟" },
+                        { title: "Spark框架", duration: "40分钟" },
+                        { title: "YARN资源管理器", duration: "35分钟" },
+                        { title: "单词计数案例", duration: "50分钟" }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "数据仓库与数据湖",
+                    description: "数据仓库、数据湖的概念、架构和实现技术",
+                    category: "数据架构",
+                    imageUrl: "https://via.placeholder.com/500x300?text=数据仓库",
+                    studentCount: 720,
+                    rating: 4.8,
+                    progress: 0,
+                    isNew: false,
+                    chapters: [
+                        { title: "数据仓库基础", duration: "40分钟" },
+                        { title: "数据建模技术", duration: "55分钟" },
+                        { title: "ETL过程", duration: "45分钟" },
+                        { title: "数据湖架构", duration: "60分钟" },
+                        { title: "数据仓库与数据湖的比较", duration: "40分钟" }
+                    ]
+                },
+                {
+                    id: 6,
+                    name: "数据挖掘与分析",
+                    description: "常用数据挖掘算法和分析方法在大数据场景中的应用",
+                    category: "数据分析",
+                    imageUrl: "https://via.placeholder.com/500x300?text=数据挖掘",
+                    studentCount: 645,
+                    rating: 4.5,
+                    progress: 0,
+                    isNew: true,
+                    chapters: [
+                        { title: "数据挖掘基础", duration: "35分钟" },
+                        { title: "关联分析", duration: "40分钟" },
+                        { title: "聚类分析", duration: "45分钟" },
+                        { title: "分类分析", duration: "45分钟" },
+                        { title: "异常检测", duration: "60分钟" }
+                    ]
+                },
+                {
+                    id: 7,
+                    name: "数据可视化技术",
+                    description: "大数据可视化的基本概念、方法和工具",
+                    category: "数据可视化",
+                    imageUrl: "https://via.placeholder.com/500x300?text=数据可视化",
+                    studentCount: 890,
+                    rating: 4.7,
+                    progress: 0,
+                    isNew: false,
+                    chapters: [
+                        { title: "数据可视化基础", duration: "50分钟" },
+                        { title: "可视化类型与选择", duration: "45分钟" },
+                        { title: "可视化设计原则", duration: "40分钟" },
+                        { title: "可视化工具与库", duration: "60分钟" }
+                    ]
+                },
+                {
+                    id: 8,
+                    name: "大数据应用实践",
+                    description: "大数据在各领域的实际应用案例和实践",
+                    category: "应用实例",
+                    imageUrl: "https://via.placeholder.com/500x300?text=应用案例",
+                    studentCount: 520,
+                    rating: 4.6,
+                    progress: 0,
+                    isNew: false,
+                    chapters: [
+                        { title: "大数据平台架构", duration: "55分钟" },
+                        { title: "行业应用案例", duration: "60分钟" },
+                        { title: "股票数据分析案例", duration: "70分钟" }
+                    ]
+                }
+            ];
+
+            // 当前选中的分类
+            let currentCategory = "全部课程";
+            
+            // 过滤按钮点击事件
+            $('.filter-btn').on('click', function() {
+                // 移除所有按钮的active类
+                $('.filter-btn').removeClass('active');
+                // 为当前按钮添加active类
+                $(this).addClass('active');
+                
+                // 获取过滤类别
+                currentCategory = $(this).text();
+                
+                // 更新课程显示
+                renderCourses();
+            });
+
+            // 搜索功能
+            $('.input-group button').on('click', function() {
+                const searchTerm = $('.input-group input').val().toLowerCase();
+                searchCourses(searchTerm);
+            });
+
+            // 按回车键搜索
+            $('.input-group input').on('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = $(this).val().toLowerCase();
+                    searchCourses(searchTerm);
+                }
+            });
+
+            // 排序下拉菜单点击事件
+            $('.dropdown-item').on('click', function(e) {
+                e.preventDefault();
+                const sortOption = $(this).text();
+                $('#sortDropdown').text(sortOption);
+                
+                // 根据选项排序
+                sortCourses(sortOption);
+            });
+            
+            // 渲染所有课程
+            function renderCourses() {
+                // 清空现有课程
+                const recommendedCoursesContainer = $('.card-header:contains("推荐课程")').siblings('.card-body').find('.row');
+                const allCoursesContainer = $('.card-header:contains("所有课程")').siblings('.card-body').find('.row');
+                
+                recommendedCoursesContainer.empty();
+                allCoursesContainer.empty();
+                
+                // 过滤课程
+                let filteredCourses = courseData;
+                if (currentCategory !== "全部课程") {
+                    filteredCourses = courseData.filter(course => course.category === currentCategory);
+                }
+                
+                // 获取推荐课程
+                const recommendedCourses = filteredCourses.filter(course => course.rating >= 4.7);
+                
+                // 渲染推荐课程
+                recommendedCourses.forEach(course => {
+                    const courseCard = createCourseCard(course);
+                    recommendedCoursesContainer.append(courseCard);
+                });
+                
+                // 如果没有推荐课程
+                if (recommendedCourses.length === 0) {
+                    recommendedCoursesContainer.append('<div class="col-12 text-center py-4"><p class="text-muted">该分类下没有推荐课程</p></div>');
+                }
+                
+                // 渲染所有课程
+                filteredCourses.forEach(course => {
+                    const courseCard = createCourseCard(course);
+                    allCoursesContainer.append(courseCard);
+                });
+                
+                // 如果没有课程
+                if (filteredCourses.length === 0) {
+                    allCoursesContainer.append('<div class="col-12 text-center py-4"><p class="text-muted">该分类下没有课程</p></div>');
+                }
+                
+                // 初始化课程卡片的点击事件
+                initializeCourseCards();
+            }
+            
+            // 搜索课程
+            function searchCourses(searchTerm) {
+                if (!searchTerm) {
+                    // 如果搜索框为空，恢复原始显示
+                    renderCourses();
+                    return;
+                }
+                
+                // 清空现有课程
+                const recommendedCoursesContainer = $('.card-header:contains("推荐课程")').siblings('.card-body').find('.row');
+                const allCoursesContainer = $('.card-header:contains("所有课程")').siblings('.card-body').find('.row');
+                
+                recommendedCoursesContainer.empty();
+                allCoursesContainer.empty();
+                
+                // 搜索匹配的课程
+                const searchResults = courseData.filter(course => 
+                    course.name.toLowerCase().includes(searchTerm) || 
+                    course.description.toLowerCase().includes(searchTerm) ||
+                    course.category.toLowerCase().includes(searchTerm)
+                );
+                
+                // 渲染搜索结果
+                if (searchResults.length > 0) {
+                    // 在所有课程区域展示搜索结果
+                    searchResults.forEach(course => {
+                        const courseCard = createCourseCard(course);
+                        allCoursesContainer.append(courseCard);
+                    });
+                    
+                    // 更改标题显示搜索结果
+                    $('.card-header:contains("所有课程")').text(`搜索结果: "${searchTerm}" (${searchResults.length})`);
+                    
+                    // 初始化课程卡片的点击事件
+                    initializeCourseCards();
+                } else {
+                    // 没有找到匹配的课程
+                    allCoursesContainer.append('<div class="col-12 text-center py-4"><p class="text-muted">没有找到匹配 "' + searchTerm + '" 的课程</p></div>');
+                    $('.card-header:contains("搜索结果")').text('搜索结果: "' + searchTerm + '" (0)');
+                }
+                
+                // 隐藏推荐课程区域
+                $('.card-header:contains("推荐课程")').parent().hide();
+            }
+            
+            // 排序课程
+            function sortCourses(sortOption) {
+                let sortedCourses = [...courseData];
+                
+                switch (sortOption) {
+                    case "最新发布":
+                        sortedCourses.sort((a, b) => b.isNew - a.isNew);
+                        break;
+                    case "最多学习":
+                        sortedCourses.sort((a, b) => b.studentCount - a.studentCount);
+                        break;
+                    case "评分最高":
+                        sortedCourses.sort((a, b) => b.rating - a.rating);
+                        break;
+                }
+                
+                // 临时保存当前数据以便重新渲染
+                const tempData = courseData.slice();
+                courseData.length = 0;
+                sortedCourses.forEach(course => courseData.push(course));
+                
+                // 重新渲染课程
+                renderCourses();
+                
+                // 恢复原始顺序
+                courseData.length = 0;
+                tempData.forEach(course => courseData.push(course));
+            }
+            
+            // 创建课程卡片
+            function createCourseCard(course) {
+                const card = $('<div class="col-md-4 mb-4"></div>');
+                const badge = course.isNew ? '<span class="badge bg-warning course-badge">新课程</span>' : '';
+                const buttonText = course.progress > 0 ? '继续学习' : '开始学习';
+                const buttonClass = course.progress > 0 ? 'btn-primary' : 'btn-outline-primary';
+                
+                card.html(`
+                    <div class="card course-card" data-course-id="${course.id}">
+                        <div class="course-image" style="background-image: url('${course.imageUrl}')"></div>
+                        ${badge}
+                        <div class="card-body">
+                            <h5 class="card-title">${course.name}</h5>
+                            <p class="card-text text-muted">${course.description}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted"><i class="bi bi-people me-1"></i> ${course.studentCount} 名学生</small>
+                                <small class="text-muted"><i class="bi bi-star-fill me-1 text-warning"></i> ${course.rating}/5.0</small>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: ${course.progress}%" aria-valuenow="${course.progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn ${buttonClass} course-btn" data-course-id="${course.id}">${buttonText}</a>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                
+                return card;
+            }
+            
+            // 课程详情弹窗
+            function showCourseDetails(courseId) {
+                const course = courseData.find(c => c.id === courseId);
+                
+                if (!course) return;
+                
+                // 创建模态框HTML
+                let chaptersHtml = '';
+                course.chapters.forEach((chapter, index) => {
+                    chaptersHtml += `
+                        <div class="chapter-item d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <div>
+                                <span class="chapter-number me-2">${index + 1}.</span>
+                                <span class="chapter-title">${chapter.title}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="duration me-3 text-muted"><i class="bi bi-clock me-1"></i>${chapter.duration}</span>
+                                <button class="btn btn-sm btn-outline-primary play-btn" data-chapter-index="${index}">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                const modalHtml = `
+                    <div class="modal fade" id="courseDetailModal" tabindex="-1" aria-labelledby="courseDetailModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="courseDetailModalLabel">${course.name}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row mb-4">
+                                        <div class="col-md-8">
+                                            <img src="${course.imageUrl}" alt="${course.name}" class="img-fluid rounded">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="mb-3">课程信息</h6>
+                                            <div class="mb-2"><i class="bi bi-tag me-2"></i>${course.category}</div>
+                                            <div class="mb-2"><i class="bi bi-people me-2"></i>${course.studentCount} 名学生</div>
+                                            <div class="mb-2"><i class="bi bi-star-fill me-2 text-warning"></i>${course.rating}/5.0</div>
+                                            <div class="mb-2"><i class="bi bi-collection me-2"></i>${course.chapters.length} 章节</div>
+                                            <div class="progress mt-3">
+                                                <div class="progress-bar" role="progressbar" style="width: ${course.progress}%" aria-valuenow="${course.progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="d-block text-center mt-1">完成进度: ${course.progress}%</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="course-description mb-4">
+                                        <h6>课程描述</h6>
+                                        <p>${course.description}</p>
+                                    </div>
+                                    
+                                    <div class="course-chapters">
+                                        <h6 class="mb-3">课程章节</h6>
+                                        <div class="chapters-list">
+                                            ${chaptersHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-primary start-course-btn" data-course-id="${course.id}">
+                                        ${course.progress > 0 ? '继续学习' : '开始学习'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 移除可能存在的旧模态框
+                $('#courseDetailModal').remove();
+                
+                // 添加模态框到body
+                $('body').append(modalHtml);
+                
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
+                modal.show();
+                
+                // 章节播放按钮点击事件
+                $('.play-btn').on('click', function() {
+                    const chapterIndex = $(this).data('chapter-index');
+                    startChapter(course.id, chapterIndex);
+                });
+                
+                // 开始/继续学习按钮点击事件
+                $('.start-course-btn').on('click', function() {
+                    startCourse(course.id);
+                });
+            }
+            
+            // 开始章节学习
+            function startChapter(courseId, chapterIndex) {
+                const course = courseData.find(c => c.id === courseId);
+                if (!course) return;
+                
+                const chapter = course.chapters[chapterIndex];
+                
+                // 关闭详情模态框
+                $('#courseDetailModal').modal('hide');
+                
+                // 获取章节内容（基于讲稿文件名）
+                let chapterContent = '加载中...';
+                
+                // 基于章节标题找到对应的讲稿内容
+                switch(chapter.title) {
+                    case "大数据的定义":
+                        chapterContent = `
+                            <h4>知识点：大数据的定义</h4>
+                            <p>大数据是指规模巨大、结构复杂、处理速度快的数据集合。它具有以下特征：</p>
+                            <ul>
+                                <li>数据规模大：数据量巨大，通常以TB、PB为单位</li>
+                                <li>数据结构复杂：数据包含多种类型和格式</li>
+                                <li>处理速度快：能够实时或接近实时地处理数据</li>
+                            </ul>
+                            <p>大数据的应用场景非常广泛，包括但不限于：</p>
+                            <ul>
+                                <li>市场分析：通过分析用户行为数据来预测市场趋势</li>
+                                <li>个性化推荐：根据用户历史行为数据推荐个性化产品或服务</li>
+                                <li>风险管理：通过分析大量金融数据来预测市场风险</li>
+                                <li>医疗健康：通过分析医疗数据来提高诊断准确性和治疗效果</li>
+                                <li>智能交通：通过分析交通数据来优化交通流量和减少拥堵</li>
+                            </ul>
+                        `;
+                        break;
+                    case "大数据特征":
+                        chapterContent = `
+                            <h4>知识点：大数据特征</h4>
+                            <p>大数据具有以下特征：</p>
+                            <ul>
+                                <li>数据规模大：数据量巨大，通常以TB、PB为单位</li>
+                                <li>数据结构复杂：数据包含多种类型和格式</li>
+                                <li>处理速度快：能够实时或接近实时地处理数据</li>
+                                <li>数据多样性：数据来源多样，包括结构化数据、半结构化数据和非结构化数据</li>
+                                <li>数据价值密度低：数据中蕴含的价值往往隐藏在大量非结构化数据中</li>
+                            </ul>
+                            <p>这些特征使得大数据分析成为可能，并且能够帮助我们发现传统数据分析无法发现的价值。</p>
+                        `;
+                        break;
+                    case "数据生命周期":
+                        chapterContent = `
+                            <h4>知识点：数据生命周期</h4>
+                            <p>数据生命周期是指数据从产生到消亡的全过程，包括数据采集、存储、处理、分析和应用等阶段。</p>
+                            <p>数据生命周期管理的目标是确保数据在整个生命周期中得到有效利用，同时降低成本和风险。</p>
+                            <p>数据生命周期管理包括以下几个阶段：</p>
+                            <ul>
+                                <li>数据采集：从各种数据源中收集数据</li>
+                                <li>数据存储：将数据存储在合适的数据存储系统中</li>
+                                <li>数据处理：对数据进行清洗、转换和整合</li>
+                                <li>数据分析：对数据进行深入分析，发现数据中的价值</li>
+                                <li>数据应用：将数据应用到实际业务中，创造价值</li>
+                            </ul>
+                            <p>数据生命周期管理的最佳实践包括：</p>
+                            <ul>
+                                <li>数据治理：建立数据治理框架，确保数据质量和一致性</li>
+                                <li>数据质量管理：确保数据准确性、完整性和一致性</li>
+                                <li>数据安全管理：确保数据安全和隐私</li>
+                                <li>数据备份和恢复：确保数据备份和恢复的可靠性和效率</li>
+                                <li>数据共享和协作：确保数据在组织内部和外部的高效共享和协作</li>
+                            </ul>
+                        `;
+                        break;
+                    case "大数据发展因素":
+                        chapterContent = `
+                            <h4>知识点：大数据发展因素</h4>
+                            <p>大数据的发展受到以下因素的影响：</p>
+                            <ul>
+                                <li>技术进步：云计算、分布式存储、分布式计算等技术的进步为大数据处理提供了技术支持</li>
+                                <li>数据量增长：互联网、社交媒体等产生的数据量呈指数级增长</li>
+                                <li>数据多样性：数据来源多样，包括结构化数据、半结构化数据和非结构化数据</li>
+                                <li>数据价值密度低：数据中蕴含的价值往往隐藏在大量非结构化数据中</li>
+                                <li>数据处理能力：数据处理能力的提升使得大数据分析成为可能</li>
+                            </ul>
+                            <p>这些因素使得大数据分析成为可能，并且能够帮助我们发现传统数据分析无法发现的价值。</p>
+                        `;
+                        break;
+                    case "大数据发展与应用":
+                        chapterContent = `
+                            <h4>知识点：大数据发展与应用</h4>
+                            <p>大数据的应用场景非常广泛，包括但不限于：</p>
+                            <ul>
+                                <li>市场分析：通过分析用户行为数据来预测市场趋势</li>
+                                <li>个性化推荐：根据用户历史行为数据推荐个性化产品或服务</li>
+                                <li>风险管理：通过分析大量金融数据来预测市场风险</li>
+                                <li>医疗健康：通过分析医疗数据来提高诊断准确性和治疗效果</li>
+                                <li>智能交通：通过分析交通数据来优化交通流量和减少拥堵</li>
+                            </ul>
+                            <p>大数据分析可以帮助我们发现传统数据分析无法发现的价值，并且能够帮助我们做出更加明智的决策。</p>
+                        `;
+                        break;
+                    default:
+                        // 通用章节内容模板
+                        chapterContent = `
+                            <h4>${chapter.title}</h4>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>正在加载"${chapter.title}"的内容...
+                            </div>
+                            <p>本章节将介绍${chapter.title}的核心概念、理论基础和实际应用。内容包括基本定义、工作原理、关键技术点以及实际案例分析。</p>
+                            <p>学习目标：</p>
+                            <ul>
+                                <li>理解${chapter.title}的基本概念和原理</li>
+                                <li>掌握相关算法和技术的应用场景</li>
+                                <li>能够运用所学知识解决实际问题</li>
+                            </ul>
+                        `;
+                }
+                
+                // 创建章节学习模态框
+                const chapterModalHtml = `
+                    <div class="modal fade" id="chapterModal" tabindex="-1" aria-labelledby="chapterModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header bg-light">
+                                    <h5 class="modal-title" id="chapterModalLabel">${chapter.title}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-9">
+                                            <!-- 章节内容区域 -->
+                                            <div class="chapter-content p-3">
+                                                ${chapterContent}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 border-start">
+                                            <!-- 章节信息和导航 -->
+                                            <div class="chapter-info p-3">
+                                                <h6 class="mb-3">章节信息</h6>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <i class="bi bi-book me-2 text-primary"></i>
+                                                    <span>课程：${course.name}</span>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                                    <span>时长：${chapter.duration}</span>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <i class="bi bi-list-ol me-2 text-primary"></i>
+                                                    <span>章节：${chapterIndex + 1}/${course.chapters.length}</span>
+                                                </div>
+                                                
+                                                <div class="progress mb-3">
+                                                    <div class="progress-bar" role="progressbar" style="width: ${(chapterIndex + 1) / course.chapters.length * 100}%" aria-valuenow="${(chapterIndex + 1) / course.chapters.length * 100}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                
+                                                <h6 class="mb-3 mt-4">章节导航</h6>
+                                                <div class="list-group chapter-nav">
+                                                    ${course.chapters.map((ch, idx) => `
+                                                        <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ${idx === chapterIndex ? 'active' : ''}" data-chapter-index="${idx}">
+                                                            <div class="text-truncate">${idx + 1}. ${ch.title}</div>
+                                                            ${idx < chapterIndex ? '<i class="bi bi-check-circle-fill text-success"></i>' : ''}
+                                                        </button>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    ${chapterIndex > 0 ? `<button type="button" class="btn btn-outline-secondary prev-chapter-btn" data-chapter-index="${chapterIndex - 1}"><i class="bi bi-arrow-left me-1"></i>上一章</button>` : ''}
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-success" id="markCompleteBtn"><i class="bi bi-check-circle me-1"></i>标记完成</button>
+                                    ${chapterIndex < course.chapters.length - 1 ? `<button type="button" class="btn btn-primary next-chapter-btn" data-chapter-index="${chapterIndex + 1}">下一章<i class="bi bi-arrow-right ms-1"></i></button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 移除可能存在的旧模态框
+                $('#chapterModal').remove();
+                
+                // 添加模态框到body
+                $('body').append(chapterModalHtml);
+                
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('chapterModal'));
+                modal.show();
+                
+                // 更新课程进度
+                if (course.progress < 100) {
+                    course.progress += 5;
+                    if (course.progress > 100) course.progress = 100;
+                    
+                    // 更新UI
+                    renderCourses();
+                }
+                
+                // 上一章按钮点击事件
+                $('.prev-chapter-btn').on('click', function() {
+                    const prevChapterIndex = $(this).data('chapter-index');
+                    $('#chapterModal').modal('hide');
+                    startChapter(courseId, prevChapterIndex);
+                });
+                
+                // 下一章按钮点击事件
+                $('.next-chapter-btn').on('click', function() {
+                    const nextChapterIndex = $(this).data('chapter-index');
+                    $('#chapterModal').modal('hide');
+                    startChapter(courseId, nextChapterIndex);
+                });
+                
+                // 章节导航点击事件
+                $('.chapter-nav .list-group-item').on('click', function() {
+                    const navChapterIndex = $(this).data('chapter-index');
+                    if (navChapterIndex !== chapterIndex) {
+                        $('#chapterModal').modal('hide');
+                        startChapter(courseId, navChapterIndex);
+                    }
+                });
+                
+                // 标记完成按钮点击事件
+                $('#markCompleteBtn').on('click', function() {
+                    // 计算每章节的进度贡献
+                    const progressPerChapter = 100 / course.chapters.length;
+                    
+                    // 更新进度至少到当前章节完成
+                    const targetProgress = (chapterIndex + 1) * progressPerChapter;
+                    if (course.progress < targetProgress) {
+                        course.progress = targetProgress;
+                        if (course.progress > 100) course.progress = 100;
+                        
+                        // 添加完成提示
+                        Toastify({
+                            text: `恭喜您完成了《${chapter.title}》章节的学习！`,
+                            duration: 3000,
+                            gravity: "top",
+                            position: "right",
+                            style: {
+                                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            }
+                        }).showToast();
+                        
+                        // 更新UI
+                        renderCourses();
+                        
+                        // 如果不是最后一章，询问是否继续下一章
+                        if (chapterIndex < course.chapters.length - 1) {
+                            if (confirm('恭喜完成本章学习！是否继续学习下一章？')) {
+                                $('#chapterModal').modal('hide');
+                                startChapter(courseId, chapterIndex + 1);
+                            }
+                        } else {
+                            alert('恭喜您已完成整个课程的学习！');
+                        }
+                    }
+                });
+            }
+            
+            // 开始/继续课程学习
+            function startCourse(courseId) {
+                const course = courseData.find(c => c.id === courseId);
+                if (!course) return;
+                
+                // 关闭详情模态框
+                $('#courseDetailModal').modal('hide');
+                
+                // 找到第一个章节或者继续上次的进度
+                let chapterIndex = 0;
+                if (course.progress > 0) {
+                    // 根据进度计算章节索引
+                    chapterIndex = Math.floor((course.progress / 100) * course.chapters.length);
+                    if (chapterIndex >= course.chapters.length) chapterIndex = course.chapters.length - 1;
+                }
+                
+                // 开始学习该章节
+                startChapter(courseId, chapterIndex);
+            }
+            
+            // 初始化课程卡片点击事件
+            function initializeCourseCards() {
+                // 课程卡片点击事件
+                $('.course-card').off('click').on('click', function(e) {
+                    if (!$(e.target).hasClass('course-btn')) {
+                        const courseId = parseInt($(this).data('course-id'));
+                        showCourseDetails(courseId);
+                    }
+                });
+                
+                // 课程按钮点击事件
+                $('.course-btn').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const courseId = parseInt($(this).data('course-id'));
+                    startCourse(courseId);
+                });
+            }
+            
+            // 初始渲染
+            renderCourses();
+        });
+    </script>
+</body>
+</html> 

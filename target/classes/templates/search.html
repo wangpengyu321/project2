@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">知识检索 - 大数据知识图谱系统</title>
+    
+    <!-- 引入样式库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --warning-color: #ffd166;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 70px;
+            --topbar-height: 60px;
+            --card-border-radius: 10px;
+            --transition-speed: 0.3s;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 基础样式 */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--gray-800);
+            overflow-x: hidden;
+            margin: 0;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* 装饰效果 */
+        .deco-shape {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(70px);
+            opacity: 0.25;
+        }
+
+        .deco-shape-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--primary-light);
+            top: -200px;
+            right: -200px;
+        }
+
+        .deco-shape-2 {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary-color);
+            bottom: -150px;
+            left: -150px;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.2rem;
+            margin: 0;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h3 i {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 20px;
+        }
+
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .sidebar.collapsed .menu-section-title {
+            display: none;
+        }
+
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+
+        .menu-item.active {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding: 15px 0;
+        }
+
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+
+        /* 主内容区域样式 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all var(--transition-speed) ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content.expanded {
+            margin-left: var(--sidebar-width-collapsed);
+        }
+
+        /* 顶部导航栏样式 */
+        .top-navbar {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-title h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            color: var(--gray-600);
+            position: relative;
+        }
+
+        .nav-icon-btn:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+
+        .nav-icon-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.6rem;
+            padding: 3px 6px;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: var(--gray-700);
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .dropdown-toggle:hover {
+            background-color: var(--gray-100);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--card-border-radius);
+            padding: 8px 0;
+            min-width: 200px;
+        }
+
+        .dropdown-header {
+            padding: 10px 20px;
+        }
+
+        .dropdown-item {
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .dropdown-item i {
+            font-size: 1rem;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+
+        /* 内容区域样式 */
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 5px;
+        }
+
+        .dashboard-subtitle {
+            color: var(--gray-600);
+            margin-bottom: 20px;
+        }
+
+        /* 搜索页面特有样式 */
+        .search-card {
+            border: none;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        .search-wrapper {
+            position: relative;
+        }
+        
+        .search-input {
+            padding-left: 20px;
+            height: 56px;
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .search-btn {
+            min-width: 120px;
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+            height: 56px;
+        }
+        
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-tags-label {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        .search-tag-item {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .search-tag-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .advanced-search-toggle {
+            text-align: center;
+        }
+        
+        .toggle-link {
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .toggle-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .advanced-search-options {
+            background-color: var(--gray-100);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 5px;
+        }
+        
+        /* 搜索结果样式 */
+        .results-summary {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        .results-count, .results-time {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .view-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .view-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .result-item {
+            border: none;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-item:hover {
+            box-shadow: var(--box-shadow-hover);
+            transform: translateY(-2px);
+        }
+        
+        .result-type-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .result-type-badge.tech {
+            background-color: var(--secondary-color);
+        }
+        
+        .result-type-badge.case {
+            background-color: var(--accent-color);
+        }
+        
+        .result-title {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .result-desc {
+            color: var(--gray-700);
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .result-desc-short {
+            color: var(--gray-700);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+        
+        .result-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .result-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+        
+        .result-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .result-tag {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* 空结果和初始状态 */
+        .empty-icon {
+            opacity: 0.5;
+        }
+        
+        .search-feature-card {
+            background-color: white;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            height: 100%;
+            transition: all var(--transition-speed) ease;
+            text-align: center;
+        }
+        
+        .search-feature-card:hover {
+            box-shadow: var(--box-shadow-hover);
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5rem;
+        }
+        
+        .search-feature-card:nth-child(2) .feature-icon {
+            background-color: var(--secondary-color);
+        }
+        
+        .search-feature-card:nth-child(3) .feature-icon {
+            background-color: var(--accent-color);
+        }
+        
+        .search-feature-card h5 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .search-feature-card p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        
+        /* AI助手样式 */
+        .chat-message {
+            margin-bottom: 15px;
+        }
+        
+        .message-content {
+            background-color: white;
+            border-radius: 15px;
+            max-width: 85%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .ai-message .message-content {
+            border-bottom-left-radius: 5px;
+        }
+        
+        .user-message .message-content {
+            border-bottom-right-radius: 5px;
+            margin-left: auto;
+        }
+        
+        .user-message small {
+            display: block;
+            text-align: right;
+        }
+
+        /* 响应式样式 */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-navbar {
+                left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 15px;
+            }
+        }
+        
+        /* 消息通知下拉菜单 */
+        .notification-dropdown {
+            width: 300px;
+            padding: 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        
+        .notification-content {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        .nav-icon-btn-inner {
+            background: none;
+            border: none;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰形状 -->
+    <div class="deco-shape deco-shape-1"></div>
+    <div class="deco-shape deco-shape-2"></div>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-diagram-3-fill"></i> 大数据知识图谱</h3>
+            <i class="bi bi-x-lg d-lg-none" id="close-sidebar" style="cursor: pointer;"></i>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">主要功能</div>
+                <a href="/aigraph/dashboard" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>仪表盘
+                </a>
+                <a href="/aigraph/graph-view" class="menu-item">
+                    <i class="bi bi-graph-up"></i>知识图谱
+                </a>
+                <a href="/aigraph/search" class="menu-item active">
+                    <i class="bi bi-search"></i>知识检索
+                </a>
+                <a href="/aigraph/analysis" class="menu-item">
+                    <i class="bi bi-diagram-3"></i>关系分析
+                </a>
+                <a href="/aigraph/visualization" class="menu-item">
+                    <i class="bi bi-bar-chart-line"></i>数据可视化
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">学习资源</div>
+                <a href="/aigraph/courses" class="menu-item">
+                    <i class="bi bi-journal-text"></i>课程内容
+                </a>
+                <a href="/aigraph/qa" class="menu-item">
+                    <i class="bi bi-chat-dots"></i>AI智能问答
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/aigraph/settings" class="menu-item">
+                    <i class="bi bi-gear"></i>系统设置
+                </a>
+                <a href="/aigraph/profile" class="menu-item">
+                    <i class="bi bi-person"></i>个人中心
+                </a>
+                <a href="/aigraph/logout" class="menu-item">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-navbar">
+            <!-- 标题 -->
+            <div class="navbar-title">
+                <h4>知识检索</h4>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="nav-icon-btn" title="消息通知">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-danger">3</span>
+                </div>
+                
+                <div class="user-dropdown dropdown">
+                    <button class="dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                        <span th:text="${username}">用户名</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-header">
+                                <strong th:text="${username}">用户名</strong>
+                                <p class="mb-0">管理员</p>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="/aigraph/profile" id="profileLink"><i class="bi bi-person"></i> 个人资料</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/settings" id="settingsLink"><i class="bi bi-gear"></i> 账号设置</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/help" id="helpLink"><i class="bi bi-question-circle"></i> 帮助中心</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/aigraph/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row mb-4" data-aos="fade-up" data-aos-duration="800">
+                    <div class="col">
+                        <h2 class="dashboard-title">知识点检索</h2>
+                        <p class="dashboard-subtitle">探索大数据技术知识体系，快速查找相关知识点</p>
+                    </div>
+                </div>
+                
+                <!-- 搜索栏 -->
+                <div class="row mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="col-12">
+                        <div class="card search-card">
+                            <div class="card-body">
+                                <form id="searchForm">
+                                    <div class="search-wrapper">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control form-control-lg search-input" id="searchInput" placeholder="输入关键词、知识点或问题...">
+                                            <button type="submit" class="btn btn-primary search-btn">
+                                                <i class="bi bi-search me-2"></i>搜索
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="search-tags mt-3">
+                                            <div class="search-tags-label">热门搜索:</div>
+                                            <div class="search-tag-item" data-value="分布式存储">分布式存储</div>
+                                            <div class="search-tag-item" data-value="Hadoop生态">Hadoop生态</div>
+                                            <div class="search-tag-item" data-value="数据采集与预处理">数据采集与预处理</div>
+                                            <div class="search-tag-item" data-value="分布式计算框架">分布式计算框架</div>
+                                            <div class="search-tag-item" data-value="数据仓库与数据湖">数据仓库与数据湖</div>
+                                            <div class="search-tag-item" data-value="数据挖掘与分析">数据挖掘与分析</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="advanced-search-toggle mt-3">
+                                        <span class="toggle-link">
+                                            <i class="bi bi-sliders me-1"></i>高级搜索
+                                            <i class="bi bi-chevron-down ms-1"></i>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="advanced-search-options mt-3" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">知识类型</label>
+                                                    <select class="form-select" id="knowledgeType">
+                                                        <option value="">全部类型</option>
+                                                        <option value="基础概念">基础概念</option>
+                                                        <option value="技术原理">技术原理</option>
+                                                        <option value="算法模型">算法模型</option>
+                                                        <option value="应用案例">应用案例</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">所属单元</label>
+                                                    <select class="form-select" id="courseUnit">
+                                                        <option value="">全部单元</option>
+                                                        <option value="单元一">单元一：大数据基础</option>
+                                                        <option value="单元二">单元二：数据采集与预处理</option>
+                                                        <option value="单元三">单元三：分布式存储系统</option>
+                                                        <option value="单元四">单元四：分布式计算框架</option>
+                                                        <option value="单元五">单元五：数据仓库与数据湖</option>
+                                                        <option value="单元六">单元六：数据挖掘与分析</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">难度级别</label>
+                                                    <select class="form-select" id="difficultyLevel">
+                                                        <option value="">全部难度</option>
+                                                        <option value="入门">入门</option>
+                                                        <option value="基础">基础</option>
+                                                        <option value="中级">中级</option>
+                                                        <option value="高级">高级</option>
+                                                        <option value="专家">专家</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">排序方式</label>
+                                                    <select class="form-select" id="sortOrder">
+                                                        <option value="relevance">相关度</option>
+                                                        <option value="newest">最新添加</option>
+                                                        <option value="popular">热门程度</option>
+                                                        <option value="difficulty_asc">难度从低到高</option>
+                                                        <option value="difficulty_desc">难度从高到低</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果 -->
+                <div id="searchResults">
+                    <div id="searchResultsHeader" class="d-none">
+                        <div class="row mb-3" data-aos="fade-up" data-aos-delay="200">
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <div class="results-summary">
+                                    <span class="results-count">13</span> 个结果，用时 <span class="results-time">0.25</span> 秒
+                                </div>
+                                <div class="view-controls">
+                                    <button class="btn btn-sm btn-outline-secondary view-btn active" data-view="list">
+                                        <i class="bi bi-list"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary view-btn" data-view="grid">
+                                        <i class="bi bi-grid"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="searchResultsEmpty" class="text-center py-5 d-none">
+                        <div class="empty-results" data-aos="fade-up" data-aos-delay="200">
+                            <div class="empty-icon mb-3">
+                                <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="mb-2">没有找到匹配的结果</h4>
+                            <p class="text-muted">尝试修改搜索关键词或筛选条件，或者使用更通用的术语</p>
+                        </div>
+                    </div>
+                    
+                    <div id="searchResultsList" class="d-none">
+                        <!-- 搜索结果列表 -->
+                        <div class="result-item card mb-3" data-aos="fade-up" data-aos-delay="250">
+                            <div class="card-body">
+                                <div class="result-type-badge">基础概念</div>
+                                <h4 class="result-title">分布式存储</h4>
+                                <p class="result-desc">分布式存储是大数据技术的核心基础，通过将数据分散存储在多台服务器上，实现高可用性、高扩展性和高性能。常见的分布式存储系统包括HDFS、HBase等，它们能够存储和管理TB级甚至PB级的海量数据。</p>
+                                <div class="result-meta">
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bookmark"></i> 第三章 分布式存储系统
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bar-chart"></i> 中级难度
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-eye"></i> 1,245次查看
+                                    </div>
+                                </div>
+                                <div class="result-tags">
+                                    <div class="result-tag">分布式文件系统</div>
+                                </div>
+                                <div class="result-actions mt-3">
+                                    <a href="/aigraph/graph-view?node=distributed-storage" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-diagram-3 me-1"></i> 在图谱中查看
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button">
+                                        <i class="bi bi-book me-1"></i> 查看详情
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-item card mb-3" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card-body">
+                                <div class="result-type-badge tech">技术原理</div>
+                                <h4 class="result-title">分布式计算框架</h4>
+                                <p class="result-desc">MapReduce是Hadoop核心计算框架，通过Map和Reduce两个阶段实现分布式计算。它将大规模数据集的处理分解为多个任务并行执行，解决了传统计算模型处理海量数据的瓶颈，是大数据处理的关键技术。</p>
+                                <div class="result-meta">
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bookmark"></i> 第四章 分布式计算框架
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bar-chart"></i> 高级难度
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-eye"></i> 953次查看
+                                    </div>
+                                </div>
+                                <div class="result-tags">
+                                    <div class="result-tag">MapReduce</div>
+                                    <div class="result-tag">分布式计算</div>
+                                    <div class="result-tag">大数据处理</div>
+                                </div>
+                                <div class="result-actions mt-3">
+                                    <a href="/aigraph/graph-view?node=distributed-computing" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-diagram-3 me-1"></i> 在图谱中查看
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button">
+                                        <i class="bi bi-book me-1"></i> 查看详情
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-item card mb-3" data-aos="fade-up" data-aos-delay="350">
+                            <div class="card-body">
+                                <div class="result-type-badge case">应用案例</div>
+                                <h4 class="result-title">Spark在实时流处理中的应用</h4>
+                                <p class="result-desc">Spark是一种基于内存计算的分布式计算框架，比MapReduce具有更高的性能。本案例展示了Spark在流数据处理、实时分析和机器学习等领域的实际应用，以及如何构建和部署高效的Spark应用程序。</p>
+                                <div class="result-meta">
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bookmark"></i> 第七章 大数据应用实践
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-bar-chart"></i> 中级难度
+                                    </div>
+                                    <div class="result-meta-item">
+                                        <i class="bi bi-eye"></i> 875次查看
+                                    </div>
+                                </div>
+                                <div class="result-tags">
+                                    <div class="result-tag">实时流处理</div>
+                                    <div class="result-tag">机器学习</div>
+                                    <div class="result-tag">数据分析</div>
+                                </div>
+                                <div class="result-actions mt-3">
+                                    <a href="/aigraph/graph-view?node=spark-streaming" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-diagram-3 me-1"></i> 在图谱中查看
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button">
+                                        <i class="bi bi-book me-1"></i> 查看详情
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="searchResultsGrid" class="row d-none">
+                        <!-- 网格视图结果 -->
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="250">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="result-type-badge">基础概念</div>
+                                    <h5 class="result-title">分布式存储</h5>
+                                    <p class="result-desc-short">分布式存储是大数据技术的核心基础，通过将数据分散存储在多台服务器上，实现高可用性、高扩展性和高性能。</p>
+                                    <div class="result-tags">
+                                        <div class="result-tag">分布式文件系统</div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-bar-chart me-1"></i> 中级
+                                        </span>
+                                        <a href="/aigraph/graph-view?node=distributed-storage" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-diagram-3 me-1"></i> 查看
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="result-type-badge tech">技术原理</div>
+                                    <h5 class="result-title">分布式计算框架</h5>
+                                    <p class="result-desc-short">MapReduce是Hadoop核心计算框架，通过Map和Reduce两个阶段实现分布式计算。它将大规模数据集的处理分解为多个任务并行执行。</p>
+                                    <div class="result-tags">
+                                        <div class="result-tag">MapReduce</div>
+                                        <div class="result-tag">分布式计算</div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-bar-chart me-1"></i> 高级
+                                        </span>
+                                        <a href="/aigraph/graph-view?node=distributed-computing" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-diagram-3 me-1"></i> 查看
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="350">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="result-type-badge case">应用案例</div>
+                                    <h5 class="result-title">Spark在实时流处理中的应用</h5>
+                                    <p class="result-desc-short">Spark是一种基于内存计算的分布式计算框架，比MapReduce具有更高的性能。</p>
+                                    <div class="result-tags">
+                                        <div class="result-tag">实时流处理</div>
+                                        <div class="result-tag">机器学习</div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-bar-chart me-1"></i> 中级
+                                        </span>
+                                        <a href="/aigraph/graph-view?node=spark-streaming" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-diagram-3 me-1"></i> 查看
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="loadMoreResults" class="text-center mt-4 mb-5 d-none" data-aos="fade-up" data-aos-delay="400">
+                        <button class="btn btn-outline-primary px-4 py-2">
+                            <i class="bi bi-arrow-down-circle me-2"></i>加载更多结果
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 初始状态 -->
+                <div id="initialSearch" data-aos="fade-up" data-aos-delay="200">
+                    <div class="row justify-content-center py-5">
+                        <div class="col-md-8 text-center">
+                            <img src="https://api.dicebear.com/7.x/shapes/svg?seed=knowledge&backgroundColor=4361ee&radius=10&size=150" alt="搜索图标" class="mb-4">
+                            <h3>输入关键词开始搜索</h3>
+                            <p class="text-muted mb-4">使用搜索栏或高级搜索功能探索大数据技术课程的知识点</p>
+                            
+                            <div class="row justify-content-center mt-5">
+                                <div class="col-md-10">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <div class="search-feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="bi bi-search"></i>
+                                                </div>
+                                                <h5>智能检索</h5>
+                                                <p>基于语义理解的搜索功能，找到最相关的知识点</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="search-feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="bi bi-sliders"></i>
+                                                </div>
+                                                <h5>精准筛选</h5>
+                                                <p>根据知识类型、难度和单元章节进行多维度筛选</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="search-feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="bi bi-diagram-3"></i>
+                                                </div>
+                                                <h5>关联查看</h5>
+                                                <p>直接在知识图谱中探索搜索结果的关联关系</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI 助手聊天界面 -->
+    <div class="ai-assistant-panel" id="aiAssistantPanel" style="display: none; position: fixed; right: 0; top: 0; width: 350px; height: 100vh; background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1); z-index: 1050; overflow: hidden; transition: all 0.3s ease;">
+        <div class="d-flex flex-column h-100">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="me-2 p-2 rounded-circle bg-primary bg-opacity-10">
+                        <i class="bi bi-robot text-primary"></i>
+                    </div>
+                    <h5 class="mb-0">AI 学习助手</h5>
+                </div>
+                <button class="btn-close" id="closeAiAssistant"></button>
+            </div>
+            
+            <div class="p-3 flex-grow-1 overflow-auto" id="chatMessages" style="background-color: #f8f9fa;">
+                <div class="chat-message ai-message mb-3">
+                    <div class="message-content p-3 rounded">
+                        <p class="mb-0">你好！我是你的 AI 学习助手。有什么知识点需要查询或者学习问题需要解答？</p>
+                    </div>
+                    <small class="text-muted">今天 10:00</small>
+                </div>
+            </div>
+            
+            <div class="p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="chatInput" placeholder="输入你的问题...">
+                    <button class="btn btn-primary" id="sendMessageBtn">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+                <div class="d-flex justify-content-around mt-2">
+                    <button class="btn btn-sm btn-light" id="suggestionBtn1">什么是分布式存储</button>
+                    <button class="btn btn-sm btn-light" id="suggestionBtn2">学习路径推荐</button>
+                    <button class="btn btn-sm btn-light" id="suggestionBtn3">难点解析</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知弹窗 -->
+    <div class="notification-popup" id="notificationPopup">
+        <div class="notification-header">
+            <h5>通知</h5>
+            <button class="close-btn" id="closeNotification">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="notification-body">
+            <div class="notification-item">
+                <div class="notification-time">2023-12-26 08:30</div>
+                <div class="notification-content">您已登录系统。</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-time">2023-12-25 14:45</div>
+                <div class="notification-content">您已登录系统。</div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-time">2023-12-24 09:15</div>
+                <div class="notification-content">您已登录系统。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识点详情模态框 -->
+    <div class="modal fade" id="knowledgeDetailModal" tabindex="-1" aria-labelledby="knowledgeDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="knowledgeDetailModalLabel">知识点详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="knowledge-detail-content">
+                        <div class="knowledge-type mb-2">
+                            <span class="badge bg-primary" id="knowledgeTypeBadge">基础概念</span>
+                        </div>
+                        <h4 id="knowledgeTitle" class="mb-3">知识点标题</h4>
+                        <p id="knowledgeDescription" class="mb-4">知识点详细描述将在这里显示。</p>
+                        
+                        <div class="knowledge-meta mb-3">
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="knowledge-meta-item">
+                                    <small class="text-muted d-block">所属章节</small>
+                                    <strong id="knowledgeChapter">第三章</strong>
+                                </div>
+                                <div class="knowledge-meta-item">
+                                    <small class="text-muted d-block">难度级别</small>
+                                    <strong id="knowledgeDifficulty">中级</strong>
+                                </div>
+                                <div class="knowledge-meta-item">
+                                    <small class="text-muted d-block">相关性</small>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1" style="height: 8px; width: 100px;">
+                                            <div id="knowledgeRelevance" class="progress-bar bg-success" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <span class="ms-2" id="knowledgeRelevanceText">75%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="knowledge-tags mb-4">
+                            <small class="text-muted d-block mb-2">相关标签</small>
+                            <div id="knowledgeTags" class="d-flex flex-wrap gap-2">
+                                <!-- 标签将在JavaScript中动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <a href="#" id="viewInGraphBtn" class="btn btn-primary">
+                        <i class="bi bi-diagram-3 me-1"></i>在图谱中查看
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    
+    <script>
+        // 初始化AOS动画库
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+        
+        $(document).ready(function() {
+            // 侧边栏切换功能
+            $('#toggle-sidebar').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#main-content').toggleClass('expanded');
+            });
+            
+            $('#close-sidebar').on('click', function() {
+                $('#sidebar').addClass('collapsed');
+                $('#main-content').addClass('expanded');
+            });
+            
+            // 用户下拉菜单功能
+            $('#profileLink, #settingsLink, #helpLink').on('click', function(e) {
+                e.preventDefault();
+                const href = $(this).attr('href');
+                window.location.href = href;
+            });
+            
+            // 知识点详情功能
+            $(document).on('click', '.btn-outline-secondary', function(e) {
+                e.preventDefault();
+                
+                // 获取父元素中的知识点信息
+                const $resultItem = $(this).closest('.result-item, .card');
+                const title = $resultItem.find('.result-title').text();
+                const description = $resultItem.find('.result-desc, .result-desc-short').text();
+                
+                // 获取知识点类型
+                let type = '基础概念';
+                let badgeClass = 'bg-primary';
+                const $typeBadge = $resultItem.find('.result-type-badge');
+                if ($typeBadge.length) {
+                    type = $typeBadge.text();
+                    if ($typeBadge.hasClass('tech')) {
+                        badgeClass = 'bg-info';
+                    } else if ($typeBadge.hasClass('case')) {
+                        badgeClass = 'bg-accent';
+                    }
+                }
+                
+                // 获取章节和难度信息
+                let chapter = '未知章节';
+                let difficulty = '未知难度';
+                const metaItems = $resultItem.find('.result-meta-item');
+                metaItems.each(function() {
+                    const text = $(this).text().trim();
+                    if (text.includes('章')) {
+                        chapter = text.replace(/\s+/g, ' ').trim();
+                    } else if (text.includes('难度')) {
+                        difficulty = text.replace(/\s+/g, ' ').trim().replace('难度', '');
+                    }
+                });
+                
+                // 获取标签
+                const tags = [];
+                $resultItem.find('.result-tag').each(function() {
+                    tags.push($(this).text());
+                });
+                
+                // 设置相关度（随机生成）
+                const relevance = Math.floor(Math.random() * 30) + 70; // 70-99%
+                
+                // 设置图谱链接
+                let graphLink = '#';
+                const $graphBtn = $resultItem.find('.btn-primary');
+                if ($graphBtn.length && $graphBtn.attr('href')) {
+                    graphLink = $graphBtn.attr('href');
+                }
+                
+                // 更新模态框内容
+                $('#knowledgeTitle').text(title);
+                $('#knowledgeDescription').text(description);
+                $('#knowledgeTypeBadge').text(type).removeClass().addClass(`badge ${badgeClass}`);
+                $('#knowledgeChapter').text(chapter);
+                $('#knowledgeDifficulty').text(difficulty);
+                $('#knowledgeRelevance').css('width', `${relevance}%`).attr('aria-valuenow', relevance);
+                $('#knowledgeRelevanceText').text(`${relevance}%`);
+                $('#viewInGraphBtn').attr('href', graphLink);
+                
+                // 更新标签
+                const $tagsContainer = $('#knowledgeTags');
+                $tagsContainer.empty();
+                tags.forEach(function(tag) {
+                    $tagsContainer.append(`<span class="badge bg-light text-dark">${tag}</span>`);
+                });
+                
+                // 显示模态框
+                const knowledgeModal = new bootstrap.Modal(document.getElementById('knowledgeDetailModal'));
+                knowledgeModal.show();
+            });
+            
+            // AI助手功能
+            $('#aiAssistantBtn').on('click', function() {
+                $('#aiAssistantPanel').toggle();
+            });
+            
+            $('#closeAiAssistant').on('click', function() {
+                $('#aiAssistantPanel').hide();
+            });
+            
+            $('#sendMessageBtn').on('click', sendMessage);
+            
+            $('#chatInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    sendMessage();
+                }
+            });
+            
+            $('.btn-light').on('click', function() {
+                const suggestion = $(this).text();
+                $('#chatInput').val(suggestion);
+                sendMessage();
+            });
+            
+            function sendMessage() {
+                const messageText = $('#chatInput').val().trim();
+                if (messageText === '') return;
+                
+                // 添加用户消息
+                const userMessageHtml = `
+                    <div class="chat-message user-message mb-3 text-end">
+                        <div class="message-content p-3 rounded bg-primary text-white">
+                            <p class="mb-0">${messageText}</p>
+                        </div>
+                        <small class="text-muted">刚刚</small>
+                    </div>
+                `;
+                $('#chatMessages').append(userMessageHtml);
+                
+                // 清空输入框
+                $('#chatInput').val('');
+                
+                // 滚动到底部
+                $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                
+                // 模拟AI响应
+                setTimeout(function() {
+                    let aiResponse = '';
+                    
+                    if (messageText.includes('分布式存储')) {
+                        aiResponse = '分布式存储是一种将数据分散存储在多台服务器上的技术，可以提高数据的可用性、扩展性和性能。在大数据领域，HDFS(Hadoop分布式文件系统)是最常用的分布式存储系统之一，它将数据分块存储并提供高可靠性和高吞吐量的数据访问。';
+                    } else if (messageText.includes('学习路径') || messageText.includes('推荐')) {
+                        aiResponse = '针对大数据技术课程，我推荐的学习路径是：<br>1. 大数据基础 → 数据采集与预处理<br>2. 分布式存储系统 → HDFS → HBase<br>3. 分布式计算框架 → MapReduce → Spark<br>4. 数据仓库与数据湖 → 数据挖掘与分析<br><br>这个路径循序渐进，由浅入深，帮助你建立完整的知识体系。';
+                    } else if (messageText.includes('难点') || messageText.includes('解析')) {
+                        aiResponse = '大数据技术学习中的常见难点包括：<br>1. 分布式系统的概念和原理<br>2. Hadoop生态系统的复杂性<br>3. 分布式计算框架的性能优化<br>4. 大规模数据处理的效率问题<br><br>我可以针对具体难点提供深入解析，你希望了解哪个方面？';
+                    } else {
+                        aiResponse = '我理解你想了解关于"' + messageText + '"的信息。在知识图谱系统中，你可以使用搜索功能查找相关知识点，或者在图谱中探索它与其他概念的关联。有什么具体问题我可以帮助解答的吗？';
+                    }
+                    
+                    const aiMessageHtml = `
+                        <div class="chat-message ai-message mb-3">
+                            <div class="message-content p-3 rounded">
+                                <p class="mb-0">${aiResponse}</p>
+                            </div>
+                            <small class="text-muted">刚刚</small>
+                        </div>
+                    `;
+                    $('#chatMessages').append(aiMessageHtml);
+                    
+                    // 滚动到底部
+                    $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+                }, 1000);
+            }
+            
+            // 搜索功能
+            $('.search-tag-item').on('click', function() {
+                const value = $(this).data('value');
+                $('#searchInput').val(value);
+                $('#searchForm').submit();
+            });
+            
+            $('.advanced-search-toggle').on('click', function() {
+                $('.advanced-search-options').slideToggle();
+                const icon = $(this).find('.bi-chevron-down, .bi-chevron-up');
+                if (icon.hasClass('bi-chevron-down')) {
+                    icon.removeClass('bi-chevron-down').addClass('bi-chevron-up');
+                } else {
+                    icon.removeClass('bi-chevron-up').addClass('bi-chevron-down');
+                }
+            });
+            
+            // 搜索表单提交
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                const searchTerm = $('#searchInput').val().trim();
+                if (searchTerm === '') return;
+                
+                // 显示加载状态
+                $('#initialSearch').hide();
+                $('#searchResultsHeader').addClass('d-none');
+                $('#searchResultsList').addClass('d-none');
+                $('#searchResultsGrid').addClass('d-none');
+                $('#searchResultsEmpty').addClass('d-none');
+                $('#loadMoreResults').addClass('d-none');
+                
+                // 模拟加载
+                setTimeout(function() {
+                    // 显示搜索结果
+                    $('#searchResultsHeader').removeClass('d-none');
+                    
+                    // 检查是否有结果
+                    if (searchTerm.toLowerCase().includes('不存在的结果')) {
+                        $('#searchResultsEmpty').removeClass('d-none');
+                        $('.results-count').text('0');
+                    } else {
+                        // 默认显示列表视图
+                        $('#searchResultsList').removeClass('d-none');
+                        $('#loadMoreResults').removeClass('d-none');
+                        $('.results-count').text('13');
+                    }
+                    
+                    // 更新搜索时间
+                    $('.results-time').text((Math.random() * 0.5 + 0.1).toFixed(2));
+                    
+                    // 重新初始化AOS动画
+                    AOS.refresh();
+                }, 1000);
+            });
+            
+            // 切换结果视图
+            $('.view-btn').on('click', function() {
+                $('.view-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                const viewType = $(this).data('view');
+                if (viewType === 'list') {
+                    $('#searchResultsList').removeClass('d-none');
+                    $('#searchResultsGrid').addClass('d-none');
+                } else {
+                    $('#searchResultsList').addClass('d-none');
+                    $('#searchResultsGrid').removeClass('d-none');
+                }
+            });
+            
+            // 加载更多结果
+            $('#loadMoreResults button').on('click', function() {
+                // 模拟加载状态
+                const $btn = $(this);
+                $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>加载中...');
+                $btn.prop('disabled', true);
+                
+                // 模拟加载更多结果
+                setTimeout(function() {
+                    const lastResult = $('#searchResultsList .result-item:last');
+                    // 添加3个新结果
+                    for (let i = 0; i < 3; i++) {
+                        const clone = lastResult.clone();
+                        clone.find('.result-title').text('新搜索结果 ' + (i + 1));
+                        clone.find('.result-desc').text('这是一个通过加载更多功能显示的新搜索结果，包含了关于大数据和分布式计算的相关知识点信息。');
+                        clone.appendTo('#searchResultsList');
+                        
+                        // 同时添加到网格视图
+                        const gridClone = $('#searchResultsGrid .col-md-4:last').clone();
+                        gridClone.find('.result-title').text('新搜索结果 ' + (i + 1));
+                        gridClone.find('.result-desc-short').text('这是一个通过加载更多功能显示的新搜索结果。');
+                        gridClone.appendTo('#searchResultsGrid');
+                    }
+                    
+                    // 更新结果计数
+                    const count = parseInt($('.results-count').text()) + 3;
+                    $('.results-count').text(count);
+                    
+                    // 恢复按钮状态
+                    $btn.html('<i class="bi bi-arrow-down-circle me-2"></i>加载更多结果');
+                    $btn.prop('disabled', false);
+                    
+                    // 重新初始化AOS动画
+                    AOS.refresh();
+                    
+                    // 如果结果超过20个，隐藏加载更多按钮
+                    if (count >= 20) {
+                        $('#loadMoreResults').addClass('d-none');
+                    }
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html> 

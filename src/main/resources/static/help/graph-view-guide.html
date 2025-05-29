@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱可视化使用指南</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.1/font/bootstrap-icons.css">
+    <style>
+        .feature-icon {
+            font-size: 2rem;
+            color: #0d6efd;
+            margin-bottom: 1rem;
+        }
+        .tip-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4">知识图谱可视化使用指南</h1>
+        
+        <div class="row mb-5">
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <h3>探索知识关系</h3>
+                <p>通过可视化形式了解知识点之间的关联关系，帮助理解学习路径。</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="bi bi-zoom-in"></i>
+                </div>
+                <h3>互动式探索</h3>
+                <p>点击、拖动、缩放，以不同方式与知识图谱交互，深入了解知识结构。</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <div class="feature-icon">
+                    <i class="bi bi-star"></i>
+                </div>
+                <h3>个性化学习</h3>
+                <p>收藏关键知识点，构建自己的学习路径，提高学习效率。</p>
+            </div>
+        </div>
+        
+        <h2 class="mb-3">基本操作指南</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h4>图谱导航</h4>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item"><i class="bi bi-mouse me-2"></i> <strong>拖动图谱</strong>：点击空白区域并拖动可移动整个图谱</li>
+                    <li class="list-group-item"><i class="bi bi-zoom-in me-2"></i> <strong>放大缩小</strong>：使用工具栏中的放大/缩小按钮或鼠标滚轮</li>
+                    <li class="list-group-item"><i class="bi bi-arrow-counterclockwise me-2"></i> <strong>重置视图</strong>：点击重置按钮回到初始视图</li>
+                    <li class="list-group-item"><i class="bi bi-hand-index me-2"></i> <strong>移动节点</strong>：点击并拖动节点可调整其位置</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h4>节点交互</h4>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item"><i class="bi bi-info-circle me-2"></i> <strong>查看详情</strong>：点击任意节点显示其详细信息</li>
+                    <li class="list-group-item"><i class="bi bi-diagram-2 me-2"></i> <strong>查看关系</strong>：在节点详情中可查看与其他知识点的关系</li>
+                    <li class="list-group-item"><i class="bi bi-star me-2"></i> <strong>收藏节点</strong>：在节点详情面板中点击"添加到收藏"</li>
+                    <li class="list-group-item"><i class="bi bi-link-45deg me-2"></i> <strong>深入探索</strong>：点击"查看节点图谱"进入以该节点为中心的视图</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="tip-box">
+            <h5><i class="bi bi-lightbulb me-2"></i>小提示</h5>
+            <p class="mb-0">对于复杂的知识图谱，可以使用不同的视图模式来聚焦于特定内容：</p>
+            <ul class="mb-0 mt-2">
+                <li>使用<strong>单元视图</strong>查看特定单元内的知识点关系</li>
+                <li>使用<strong>节点视图</strong>专注于特定知识点及其关联</li>
+                <li>使用<strong>学习路径视图</strong>查看推荐的学习顺序</li>
+            </ul>
+        </div>
+        
+        <h2 class="mb-3">图例说明</h2>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h4>节点颜色</h4>
+                <p>节点颜色表示知识点所属的单元：</p>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:20px;height:20px;background-color:#ff7f0e;border-radius:50%;margin-right:10px;"></div>
+                    <span>第一单元</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:20px;height:20px;background-color:#2ca02c;border-radius:50%;margin-right:10px;"></div>
+                    <span>第二单元</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:20px;height:20px;background-color:#d62728;border-radius:50%;margin-right:10px;"></div>
+                    <span>第三单元</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width:20px;height:20px;background-color:#9467bd;border-radius:50%;margin-right:10px;"></div>
+                    <span>第四单元</span>
+                </div>
+                <!-- 更多单元颜色 -->
+            </div>
+            <div class="col-md-6">
+                <h4>连接类型</h4>
+                <p>连接线表示知识点之间的关系类型：</p>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:30px;height:2px;background-color:#ff0000;margin-right:10px;"></div>
+                    <span>前置知识</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:30px;height:2px;background-color:#0000ff;margin-right:10px;"></div>
+                    <span>相关知识</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div style="width:30px;height:2px;background-color:#00aa00;margin-right:10px;"></div>
+                    <span>组成关系</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div style="width:30px;height:2px;background-color:#aa00aa;margin-right:10px;"></div>
+                    <span>学习路径</span>
+                </div>
+            </div>
+        </div>
+        
+        <a href="/aigraph/graph-test" class="btn btn-primary">开始探索知识图谱</a>
+    </div>
+    
+    <script src="/webjars/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

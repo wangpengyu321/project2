@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">知识图谱系统 - 系统设置</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-width-collapsed: 70px;
+            --topbar-height: 60px;
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --danger-color: #f43f5e;
+            --dark-color: #0f172a;
+            --dark-blue: #1e2a78;
+            --light-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--primary-light));
+            --gradient-accent: linear-gradient(135deg, var(--accent-color), #b5179e);
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--dark-blue));
+            --gradient-success: linear-gradient(135deg, var(--success-color), #34d399);
+            --card-border-radius: 10px;
+            --transition-speed: 0.3s;
+            --border-radius: 12px;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif;
+            background-color: #f5f7fb;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            color: var(--gray-700);
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        
+        .sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+        
+        .sidebar-menu {
+            padding: 15px 0;
+        }
+        
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        
+        .menu-section-title {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        .sidebar.collapsed .menu-section-title {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-700);
+            text-decoration: none;
+            transition: all var(--transition-speed) ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .menu-item.active {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+            border-left: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all var(--transition-speed) ease;
+            padding-top: var(--topbar-height);
+        }
+        
+        .main-content.expanded {
+            margin-left: var(--sidebar-width-collapsed);
+        }
+        
+        /* 顶部导航栏 */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
+            height: var(--topbar-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 999;
+            box-shadow: var(--box-shadow);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .top-navbar.expanded {
+            left: var(--sidebar-width-collapsed);
+        }
+        
+        .navbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar-title h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .topbar-title h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        /* 用户个人信息下拉框 */
+        .user-dropdown .dropdown-toggle {
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .user-dropdown .dropdown-toggle:focus {
+            box-shadow: none;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .user-info {
+            text-align: left;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--box-shadow-hover);
+        }
+        
+        /* 内容区域 */
+        .content-area {
+            padding: 30px;
+        }
+        
+        /* 通知小红点 */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--danger-color);
+            border-radius: 50%;
+        }
+        
+        /* 通知按钮 */
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        /* 通知下拉菜单 */
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .notification-dropdown.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .notification-header h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .notification-items {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            opacity: 0.15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .notification-footer {
+            padding: 15px 20px;
+            text-align: center;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .notification-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* 导航栏按钮样式 */
+        .nav-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+        }
+        
+        .nav-icon-btn:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-color);
+        }
+        
+        .nav-icon-btn i {
+            font-size: 1.2rem;
+        }
+        
+        /* 通知弹窗样式 */
+        .notification-popup {
+            position: fixed;
+            top: calc(var(--topbar-height) + 10px);
+            right: 30px;
+            width: 320px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-popup.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .notification-body {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .notification-content {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        /* 导航栏右侧按钮组 */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* 用户下拉菜单样式 */
+        .user-dropdown {
+            position: relative;
+        }
+        
+        .user-dropdown .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .user-dropdown .dropdown-toggle:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        /* 移除主内容区域中的通知内容 */
+        .content {
+            padding: 30px;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 装饰形状 -->
+    <div class="deco-shape deco-shape-1"></div>
+    <div class="deco-shape deco-shape-2"></div>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-diagram-3-fill"></i> 大数据知识图谱</h3>
+            <i class="bi bi-x-lg d-lg-none" id="close-sidebar" style="cursor: pointer;"></i>
+        </div>
+        
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">主要功能</div>
+                <a href="/aigraph/dashboard" class="menu-item">
+                    <i class="bi bi-speedometer2"></i>仪表盘
+                </a>
+                <a href="/aigraph/graph-view" class="menu-item">
+                    <i class="bi bi-graph-up"></i>知识图谱
+                </a>
+                <a href="/aigraph/search" class="menu-item">
+                    <i class="bi bi-search"></i>知识检索
+                </a>
+                <a href="/aigraph/analysis" class="menu-item">
+                    <i class="bi bi-diagram-3"></i>关系分析
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">学习资源</div>
+                <a href="/aigraph/courses" class="menu-item">
+                    <i class="bi bi-journal-text"></i>课程内容
+                </a>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-section-title">系统管理</div>
+                <a href="/aigraph/settings" class="menu-item active">
+                    <i class="bi bi-gear"></i>系统设置
+                </a>
+                <a href="/aigraph/profile" class="menu-item">
+                    <i class="bi bi-person"></i>个人中心
+                </a>
+                <a href="/aigraph/logout" class="menu-item">
+                    <i class="bi bi-box-arrow-right"></i>退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content">
+        <!-- 顶部导航栏 -->
+        <div class="top-navbar">
+            <!-- 标题 -->
+            <div class="navbar-title">
+                <h4>系统设置</h4>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="nav-icon-btn" title="消息通知">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge bg-danger">3</span>
+                </div>
+                
+                <div class="user-dropdown dropdown">
+                    <button class="dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                        <span th:text="${username}">用户名</span>
+                        <i class="bi bi-chevron-down ms-2"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <div class="dropdown-header">
+                                <strong th:text="${username}">用户名</strong>
+                                <p class="mb-0">管理员</p>
+                            </div>
+                        </li>
+                        <li><a class="dropdown-item" href="/aigraph/profile" id="profileLink"><i class="bi bi-person"></i> 个人资料</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/settings" id="settingsLink"><i class="bi bi-gear"></i> 账号设置</a></li>
+                        <li><a class="dropdown-item" href="/aigraph/help" id="helpLink"><i class="bi bi-question-circle"></i> 帮助中心</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/aigraph/logout"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知弹窗 -->
+        <div class="notification-popup" id="notificationPopup">
+            <div class="notification-header">
+                <h5>通知</h5>
+                <button class="close-btn" id="closeNotification">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="notification-body">
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-26 08:30</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-25 14:45</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-time">2023-12-24 09:15</div>
+                    <div class="notification-content">您已登录系统。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- 原有的设置内容保持不变 -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- 账户设置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                账户设置
+                            </div>
+                            <div class="card-body">
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">用户名</label>
+                                        <input type="text" class="form-control" id="username" value="zhang_san" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">邮箱地址</label>
+                                        <input type="email" class="form-control" id="email" value="zhangsan@example.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="currentPassword" class="form-label">当前密码</label>
+                                        <input type="password" class="form-control" id="currentPassword">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newPassword" class="form-label">新密码</label>
+                                        <input type="password" class="form-control" id="newPassword">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="confirmPassword" class="form-label">确认新密码</label>
+                                        <input type="password" class="form-control" id="confirmPassword">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">保存修改</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- 通知设置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                通知设置
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">接收邮件通知</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="systemNotifications" checked>
+                                    <label class="form-check-label" for="systemNotifications">接收系统通知</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="learningReminders" checked>
+                                    <label class="form-check-label" for="learningReminders">学习提醒</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="marketingEmails">
+                                    <label class="form-check-label" for="marketingEmails">营销邮件</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存设置</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <!-- 显示设置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                显示设置
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="themeSelect" class="form-label">系统主题</label>
+                                    <select class="form-select" id="themeSelect">
+                                        <option value="light" selected>浅色主题</option>
+                                        <option value="dark">深色主题</option>
+                                        <option value="auto">跟随系统</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="fontSizeSelect" class="form-label">字体大小</label>
+                                    <select class="form-select" id="fontSizeSelect">
+                                        <option value="small">小</option>
+                                        <option value="medium" selected>中</option>
+                                        <option value="large">大</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="languageSelect" class="form-label">系统语言</label>
+                                    <select class="form-select" id="languageSelect">
+                                        <option value="zh" selected>简体中文</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">应用设置</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 隐私设置 -->
+                        <div class="card">
+                            <div class="card-header">
+                                隐私设置
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="profileVisibility" checked>
+                                    <label class="form-check-label" for="profileVisibility">公开个人资料</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="learningProgress" checked>
+                                    <label class="form-check-label" for="learningProgress">分享学习进度</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="dataSaving">
+                                    <label class="form-check-label" for="dataSaving">数据保存模式</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存设置</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    
+    <script>
+        // 侧边栏切换
+        $(document).ready(function() {
+            $('#toggle-sidebar').on('click', function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#main-content').toggleClass('expanded');
+            });
+            
+            // 通知按钮点击事件
+            $('#notificationBtn').on('click', function() {
+                $('#notificationPopup').toggleClass('show');
+            });
+            
+            // 点击其他地方关闭通知弹窗
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#notificationPopup').length && 
+                    !$(e.target).closest('#notificationBtn').length) {
+                    $('#notificationPopup').removeClass('show');
+                }
+            });
+            
+            // 初始化AOS动画
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        });
+    </script>
+</body>
+</html> 
